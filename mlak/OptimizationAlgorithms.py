@@ -6,7 +6,9 @@ import LinearRegression as linReg
 def feature_normalize( X ):
 	mu = np.mean( X, axis = 0 )
 	sigma = np.std( X, axis = 0, ddof = 0 )
-	X = ( X - mu ) / sigma
+	with np.errstate( divide = "ignore", invalid = "ignore" ):
+		X = ( X - mu ) / sigma
+	X[ ~ np.isfinite( X ) ] = 0
 	return X, mu, sigma
 
 def gradient_descent( X, y, theta, alpha, iters ):

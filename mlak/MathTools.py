@@ -1,14 +1,14 @@
 import numpy as np
-from math import log, exp
+from scipy.special import expit
 
-log_v = np.vectorize( log )
-exp_v = np.vectorize( exp )
+def log_v( x ):
+	with np.errstate( divide = "ignore", invalid = "ignore" ):
+		return np.log( x )
 
 # Sigmoid function.
 def sigmoid( x ):
 	return 1 / ( 1 + exp( -x ) )
 
 # Vectorized sigmoid function.
-def sigmoid_v( x ):
-	return 1 / ( 1 + exp_v( -x ) )
+sigmoid_v = expit
 
