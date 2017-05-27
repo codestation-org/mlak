@@ -7,6 +7,8 @@ def get_filename_extension( path_ ):
 	_, fileExtension = os.path.splitext( path_ )
 	return fileExtension[1:]
 
+# Load data from known file types.
+# Supported file types are: CSV, Python Pickle, Matlab.
 def load( path_ ):
 	ext = get_filename_extension( path_ )
 	data = {}
@@ -24,6 +26,8 @@ def load( path_ ):
 		raise Exception( "Unknown file extension {}".format( ext ) )
 	return data
 
+# Save data to either Python Pickle or Matlab file.
+# Desired file type is recognized from suppied file name extension.
 def save( path_, data_ ):
 	ext = get_filename_extension( path_ )
 	data = {}

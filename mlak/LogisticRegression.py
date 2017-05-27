@@ -8,7 +8,7 @@ def compute_cost( theta, *args ):
 	theta = deepcopy( theta )
 	la.columnize( theta )
 
-	hr = mt.sigmoid( np.dot( X, theta ) )
+	hr = mt.sigmoid_v( np.dot( X, theta ) )
 
 	m = len( y )
 	err = -( np.dot( y.T, mt.log_v( hr ) ) + np.dot( ( 1 - y.T ), mt.log_v( 1 - hr ) ) )
@@ -22,7 +22,7 @@ def compute_grad( theta, *args ):
 	X, y, regularizationParam = args
 	theta = deepcopy( theta )
 	la.columnize( theta )
-	hr = mt.sigmoid( np.dot( X, theta ) )
+	hr = mt.sigmoid_v( np.dot( X, theta ) )
 	theta[ 0 ] = 0
 	m = len( y )
 	grad = ( np.dot( X.T, ( hr - y ) ) + theta * regularizationParam ) / m
