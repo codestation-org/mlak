@@ -31,6 +31,7 @@ def compute_grad( theta, *args ):
 
 def predict( X, theta ):
 	p = mt.sigmoid( np.dot( X, theta ) ) >= 0.5
+	return p
 
 def predict_one_vs_all( X, all_theta ):
 	return np.argmax( np.dot( X, all_theta.T ), axis = 1 )
