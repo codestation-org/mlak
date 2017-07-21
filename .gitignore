@@ -1,3 +1,4 @@
 #Ignore PhpStorm project files (yes, I use it for editing)
 .idea
 lib/__pycache__/
+.spyderworkspace
