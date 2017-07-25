@@ -11,16 +11,16 @@ def feature_normalize( X ):
 	X = ( X - mu ) / sigma
 	return X, mu, sigma
 
-def gradient_descent( X, y, theta, alpha, iters ):
+def gradient_descent( X, y, theta, alpha, iters, lambda_val ):
 	m = len( y )
 	J_history = np.zeros( iters )
 	for i in range( iters ):
-		cost, grad = linReg.compute_cost_grad( X, y, theta )
+		cost, grad = linReg.compute_cost_grad( X, y, theta, lambda_val )
 		theta = theta - alpha * grad
 		J_history[i] = cost
 	return theta, J_history
 
-def gradient_descent_fminCG( X, y, theta, iters ):
+def gradient_descent_fminCG( X, y, theta, iters, lambda_val ):
 	print( "initial theta = {}".format( theta.flatten() ) )
-	return optimize.fmin_cg( linReg.compute_cost_fminCG, theta, fprime = linReg.compute_grad_fminCG, args = ( X, y ), maxiter = iters )
+	return optimize.fmin_cg( linReg.compute_cost_fminCG, theta, fprime = linReg.compute_grad_fminCG, args = ( X, y, lambda_val ), maxiter = iters )
 
