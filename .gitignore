@@ -2,3 +2,4 @@
 .idea
 lib/__pycache__/
 .spyderworkspace
+.spyderproject
