@@ -14,12 +14,12 @@ def transpose( v ):
 # Solve Normal Equation.
 # Find \theta that gives best approximation for solution of given equation system.
 def normal_equation( X, y, lambda_val ):
-    n = np.size(X, axis=1)
-    L = np.eye(n)
-    L[0,0] = 0
-    return np.dot( np.dot( np.linalg.pinv( np.dot( X.T, X ) + lambda_val * L), X.T ), y )
+	n = np.size(X, axis=1)
+	L = np.eye(n)
+	L[0,0] = 0
+	return np.dot( np.dot( np.linalg.pinv( np.dot( X.T, X ) + lambda_val * L), X.T ), y )
 
 def add_ones_column( X ):
-    m = np.size(X, axis=0)
-    X_ext = np.c_[np.ones((m, 1)), X]
-    return X_ext
+	m = np.size(X, axis=0)
+	X_ext = np.c_[np.ones((m, 1)), X]
+	return X_ext
