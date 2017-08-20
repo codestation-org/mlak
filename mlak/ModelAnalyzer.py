@@ -48,18 +48,23 @@ def split_data( X, y, cvFraction, testFraction ):
 
 	return DataSet( Observations( XTrain, yTrain ), Observations( XCV, yCV ), Observations( XTest, yTest ) )
 
-def find_solution( solver, X, y, **kwArgs ):
-	lambdaRange = kwArgs.get( "lambdaRange", ( 0, 100 ) )
-	lambdaQuality = kwArgs.get( "lambdaQuality", 1 )
+def preprocess_data( solver, X, y, **kwArgs ):
 	cvFrequency = kwArgs.get( "cvFrequency", 0.2 )
 	testFrequency = kwArgs.get( "testFrequency", 0.2 )
 
+	X, y = solver.preprocess( X, y )
+
 	XNormalized, mu, sigma = oa.feature_normalize( X )
 	m = np.size( X, 0 )
-
 	XWithOnes = np.c_[ np.ones( m ), XNormalized ]
-	XWithOnes, y = solver.preprocess( XWithOnes, y )
-	dataSet = split_data( XWithOnes, y, cvFrequency, testFrequency )
+
+	return ( mu, sigma, split_data( XWithOnes, y, cvFrequency, testFrequency ) )
+
+def find_solution( solver, X, y, **kwArgs ):
+	lambdaRange = kwArgs.get( "lambdaRange", ( 0, 100 ) )
+	lambdaQuality = kwArgs.get( "lambdaQuality", 1 )
+
+	mu, sigma, dataSet = preprocess_data( solver, X, y, **kwArgs )
 
 	lo = lambdaRange[0]
 	hi = lambdaRange[1]
