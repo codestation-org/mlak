@@ -116,5 +116,5 @@ def find_solution( solver, X, y, **kwArgs ):
 		med = np.mean( [lo, hi] )
 		solution = sMed[0]
 	solution.set( mu = mu, sigma = sigma )
-	return solution, solver.verify( solution, dataSet.testSet.X, dataSet.testSet.y )
+	return solution, solver.verify( solution, dataSet.testSet.X, dataSet.testSet.y ), med
 
