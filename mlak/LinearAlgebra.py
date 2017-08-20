@@ -3,6 +3,7 @@ import numpy as np
 # Turn whatever vector into a column vector.
 def columnize( v ):
 	v.shape = ( v.shape[0], 1 )
+	return v
 
 # Inplace transpose.
 def transpose( v ):
@@ -10,6 +11,7 @@ def transpose( v ):
 	a1 = s[0]
 	a2 = s[1] if len( s ) > 1 else 1
 	v.shape = ( a2, a1 )
+	return v
 
 # Solve Normal Equation.
 # Find \theta that gives best approximation for solution of given equation system.
@@ -23,3 +25,4 @@ def add_ones_column( X ):
 	m = np.size(X, axis=0)
 	X_ext = np.c_[np.ones((m, 1)), X]
 	return X_ext
+
