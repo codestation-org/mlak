@@ -38,31 +38,31 @@ def predict( X, theta ):
 def predict_one_vs_all( X, all_theta ):
 	return np.argmax( np.dot( X, all_theta.T ), axis = 1 )
 
-class LogisticRegressionSolver( ma.SolverBase ):
-	def __init__( self_, X, y, **kwArgs ):
+class LogisticRegressionSolver:
+	def __init__( self_, **kwArgs ):
+		self_._iterations = kwArgs.get( "iters", 50 )
+
+	def preprocess( self_, X, y ):
 		self_._classes, yReverseIndex = np.unique( y, return_inverse = True )
 		la.columnize( yReverseIndex )
 		self_._classCount = len( self_._classes )
-		super().__init__( X, yReverseIndex, **kwArgs )
+		return ( X, yReverseIndex )
 
-	def solve( self_, Lambda, **kwArgs ):
-		print( "trying lambda: {}".format( Lambda ), end = "" )
-		n = np.size( self_._dataSet.trainSet.X, 1 )
+	def train( self_, X, y, Lambda, **kwArgs ):
+		n = np.size( X, axis = 1 )
 		thetas = np.zeros( ( self_._classCount, n ) )
 		for c in range( self_._classCount ):
 			thetas[c] = optimize.fmin_cg(
 				compute_cost,
 				thetas[c], fprime = compute_grad,
-				args = ( self_._dataSet.trainSet.X, ( self_._dataSet.trainSet.y == c ), Lambda ),
+				args = ( X, ( y == c ), Lambda ),
 				maxiter = self_._iterations,
 				disp = False
 			)
-		ypCV = predict_one_vs_all( self_._dataSet.crossValidationSet.X, thetas )
-		accuracy = np.mean( 1.0 * ( self_._dataSet.crossValidationSet.y.flatten() == ypCV ) )
-		print( ", accuracy = {}".format( accuracy ) )
-		return ma.Solution( thetas, accuracy, Lambda )
+		return ma.Solution( theta = thetas )
 
-	def test( self_, solution ):
-		yp = predict_one_vs_all( self_._dataSet.testSet.X, solution.theta )
-		accuracy = np.mean( 1.0 * ( self_._dataSet.testSet.y.flatten() == yp ) )
-		return accuracy
+	def verify( self_, solution, X, y ):
+		yp = predict_one_vs_all( X, solution.theta() )
+		accuracy = np.mean( 1.0 * ( y.flatten() == yp ) )
+		return 1 - accuracy
+
