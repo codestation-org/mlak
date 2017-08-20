@@ -1,6 +1,8 @@
 import numpy as np
 from collections import namedtuple
 import OptimizationAlgorithms as oa
+import LinearAlgebra as la
+import FeatureTools as ft
 
 Observations = namedtuple( "Observations", "X y" )
 DataSet = namedtuple( "DataSet", "trainSet crossValidationSet testSet" )
@@ -28,7 +30,9 @@ class Solution:
 
 # Split data to train set, cross validation set and test set.
 # *Fraction tells how much of the data shall go into given set.
-def split_data( X, y, cvFraction, testFraction ):
+def split_data( X, y, **kwArgs ):
+	cvFraction = kwArgs.get( "cvFraction", 0.2 )
+	testFraction = kwArgs.get( "testFraction", 0.2 )
 	assert cvFraction + testFraction < 1
 	m = np.size( X, 0 )
 	cvSize = int( m * cvFraction )
@@ -48,23 +52,54 @@ def split_data( X, y, cvFraction, testFraction ):
 
 	return DataSet( Observations( XTrain, yTrain ), Observations( XCV, yCV ), Observations( XTest, yTest ) )
 
-def preprocess_data( solver, X, y, **kwArgs ):
-	cvFrequency = kwArgs.get( "cvFrequency", 0.2 )
-	testFrequency = kwArgs.get( "testFrequency", 0.2 )
+class DataSource:
+	def __init__( self_, X, y, **kwArgs ):
+		self_._XOrig = X
+		self_._yOrig = y
+		self_._y = y
+		self_._functions = kwArgs.get( "functions", [] )
+		self_._classifier = kwArgs.get( "classifier", False )
 
-	X, y = solver.preprocess( X, y )
+		X = ft.add_features( self_._XOrig, self_._functions )
+		X, self_._mu, self_._sigma = oa.feature_normalize( X )
+		m = np.size( X, 0 )
+		self_._X = np.c_[ np.ones( m ), X ]
 
-	XNormalized, mu, sigma = oa.feature_normalize( X )
-	m = np.size( X, 0 )
-	XWithOnes = np.c_[ np.ones( m ), XNormalized ]
+		if self_._classifier:
+			self_._classes, self_._y = np.unique( y, return_inverse = True )
+			la.columnize( self_._y )
 
-	return ( mu, sigma, split_data( XWithOnes, y, cvFrequency, testFrequency ) )
+	def conform_data( self_, X ):
+		X = ft.add_features( X, self._functions )
+		X -= solution.mu()
+		X /= solution.sigma()
+		X = np.c_[ np.ones( m ), X ]
+		return X
+
+	def X( self_ ):
+		return self_._X
+
+	def y( self_ ):
+		return self_._y
+
+	def label( self_, y ):
+		return self_._classes[ y ]
+
+	def mu( self_ ):
+		return self_._mu
+
+	def sigma( self_ ):
+		return self_._sigma
+
+	def class_count( self_ ):
+		return len( self_._classes )
 
 def find_solution( solver, X, y, **kwArgs ):
 	lambdaRange = kwArgs.get( "lambdaRange", ( 0, 100 ) )
 	lambdaQuality = kwArgs.get( "lambdaQuality", 1 )
 
-	mu, sigma, dataSet = preprocess_data( solver, X, y, **kwArgs )
+	dataSource = DataSource( X, y, **kwArgs )
+	dataSet = split_data( dataSource.X(), dataSource.y(), **kwArgs )
 
 	lo = lambdaRange[0]
 	hi = lambdaRange[1]
@@ -73,7 +108,7 @@ def find_solution( solver, X, y, **kwArgs ):
 
 	def train_and_verify( x ):
 		print( "training with lambda: {}".format( x ), end = "" )
-		solution = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, x, **kwArgs )
+		solution = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, dataSource = dataSource, Lambda = x, **kwArgs )
 		failureRate = solver.verify( solution, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
 		print( ", failureRate = {}".format( failureRate ) )
 		return ( solution, failureRate )
@@ -115,6 +150,6 @@ def find_solution( solver, X, y, **kwArgs ):
 					break
 		med = np.mean( [lo, hi] )
 		solution = sMed[0]
-	solution.set( mu = mu, sigma = sigma )
+	solution.set( mu = dataSource.mu(), sigma = dataSource.sigma() )
 	return solution, solver.verify( solution, dataSet.testSet.X, dataSet.testSet.y ), med
 

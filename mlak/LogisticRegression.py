@@ -42,16 +42,12 @@ class LogisticRegressionSolver:
 	def __init__( self_, **kwArgs ):
 		self_._iterations = kwArgs.get( "iters", 50 )
 
-	def preprocess( self_, X, y ):
-		self_._classes, yReverseIndex = np.unique( y, return_inverse = True )
-		la.columnize( yReverseIndex )
-		self_._classCount = len( self_._classes )
-		return ( X, yReverseIndex )
-
-	def train( self_, X, y, Lambda, **kwArgs ):
+	def train( self_, X, y, **kwArgs ):
+		Lambda = kwArgs.get( "Lambda" )
+		dataSource = kwArgs.get( "dataSource" )
 		n = np.size( X, axis = 1 )
-		thetas = np.zeros( ( self_._classCount, n ) )
-		for c in range( self_._classCount ):
+		thetas = np.zeros( ( dataSource.class_count(), n ) )
+		for c in range( dataSource.class_count() ):
 			thetas[c] = optimize.fmin_cg(
 				compute_cost,
 				thetas[c], fprime = compute_grad,
