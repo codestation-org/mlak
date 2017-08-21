@@ -2,6 +2,13 @@ from copy import deepcopy
 import numpy as np
 
 import LinearAlgebra as la
+import ModelAnalyzer as mo
+
+import MathTools as mt
+import ModelAnalyzer as ma
+import numpy as np
+import OptimizationAlgorithms as oa
+
 
 # Compute cost value for given theta.
 def compute_cost( X, y, theta, lambda_val ):
@@ -37,3 +44,28 @@ def compute_cost_fminCG( theta, *args ):
 def compute_grad_fminCG( theta, *args ):
 	return compute_grad( args[0], args[1], theta, args[2] ).flatten()
 
+class LinearRegressionSolver:
+	def train( self_, X, y, **kwArgs ):
+		iters = kwArgs.get( "iters", 50 )
+		Lambda = kwArgs.get( "Lambda", 0 )
+		shaper = mo.DataShaper( X, y, **kwArgs )
+		initial_theta = shaper.initial_theta()
+
+		X = shaper.conform( X )
+
+		theta = oa.gradient_descent_fminCG(X, y, initial_theta, iters, Lambda)
+
+		return ma.Solution( theta = theta, shaper = shaper )
+
+	def verify( self_, solution, X, y ):
+		y_pred = self_.predict(solution, X)
+
+		X = solution.shaper().conform( X )
+		m = np.size(y)
+
+		sqErr = np.sum((y_pred-y)**2) / m
+		return sqErr
+
+	def predict( self_, solution, X ):
+		X = solution.shaper().conform( X )
+		return np.dot(X, solution.theta())

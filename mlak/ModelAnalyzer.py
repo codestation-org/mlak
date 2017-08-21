@@ -15,7 +15,6 @@ class DataShaper:
 		self_._featureCount = np.size( X, axis = 1 ) + len( self_._functions ) + 1
 		self_._classes = None
 
-		print( "functions = {}".format( self_._functions ) )
 		X = ft.add_features( X, self_._functions )
 		self_._mu, self_._sigma = ft.find_normalization_params( X )
 
