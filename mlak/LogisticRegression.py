@@ -40,29 +40,32 @@ def predict_one_vs_all( X, all_theta ):
 	return np.argmax( np.dot( X, all_theta.T ), axis = 1 )
 
 class LogisticRegressionSolver:
-	def __init__( self_, **kwArgs ):
-		self_._iterations = kwArgs.get( "iters", 50 )
-
 	def train( self_, X, y, **kwArgs ):
+		iters = kwArgs.get( "iters", 50 )
 		Lambda = kwArgs.get( "Lambda" )
-		self_._shaper = mo.DataShaper( X, y, **kwArgs )
+		shaper = mo.DataShaper( X, y, **kwArgs )
 		thetas = []
-		X = self_._shaper.conform( X )
-		y = self_._shaper.map_labels( y )
-		for c in range( self_._shaper.class_count() ):
+		X = shaper.conform( X )
+		y = shaper.map_labels( y )
+		for c in range( shaper.class_count() ):
 			theta = optimize.fmin_cg(
 				compute_cost,
-				self_._shaper.initial_theta(), fprime = compute_grad,
+				shaper.initial_theta(), fprime = compute_grad,
 				args = ( X, ( y == c ), Lambda ),
-				maxiter = self_._iterations,
+				maxiter = iters,
 				disp = False
 			)
 			thetas.append( theta )
-		return ma.Solution( theta = np.array( thetas ), shaper = self_._shaper )
+		return ma.Solution( theta = np.array( thetas ), shaper = shaper )
 
 	def verify( self_, solution, X, y ):
-		X = self_._shaper.conform( X )
+		X = solution.shaper().conform( X )
 		yp = predict_one_vs_all( X, solution.theta() )
-		accuracy = np.mean( 1.0 * ( y.flatten() == self_._shaper.labels( yp ) ) )
+		accuracy = np.mean( 1.0 * ( y.flatten() == solution.shaper().labels( yp ) ) )
 		return 1 - accuracy
+
+	def predict( self_, solution, X ):
+		X = solution.shaper().conform( X )
+		yp = predict_one_vs_all( X, solution.theta() )
+		return solution.shaper().labels( yp )
 
