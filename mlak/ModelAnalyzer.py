@@ -89,13 +89,16 @@ def split_data( X, y, **kwArgs ):
 
 def find_solution( solver, X, y, **kwArgs ):
 	print( ">>> Looking for a solution..." )
-	optimizationParams = kwArgs.get( "optimizationParams", { "dummy" : None } )
+	optimizationParams = kwArgs.get( "optimizationParams", { "dummy" : [ 0 ] } )
 	names = []
 	values = []
 	for k, v in optimizationParams.items():
-		names.append( k )
-		values.append( v )
-		print( "{}, {}".format( k, v ) )
+		if type( v ) == list:
+			names.append( k )
+			if len( v ) == 0:
+				v.append( 0 )
+			values.append( v )
+		print( "{}: {}".format( k, v ) )
 
 	dataSet = split_data( X, y, **kwArgs )
 
