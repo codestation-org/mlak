@@ -3,6 +3,8 @@ from collections import namedtuple
 import OptimizationAlgorithms as oa
 import LinearAlgebra as la
 import FeatureTools as ft
+from itertools import product
+import math
 
 Observations = namedtuple( "Observations", "X y" )
 DataSet = namedtuple( "DataSet", "trainSet crossValidationSet testSet" )
@@ -12,6 +14,7 @@ class DataShaper:
 		self_._functions = kwArgs.get( "functions", [] )
 		self_._featureCount = np.size( X, axis = 1 ) + len( self_._functions ) + 1
 
+		print( "functions = {}".format( self_._functions ) )
 		X = ft.add_features( X, self_._functions )
 		self_._mu, self_._sigma = ft.find_normalization_params( X )
 
@@ -85,58 +88,33 @@ def split_data( X, y, **kwArgs ):
 	return DataSet( Observations( XTrain, yTrain ), Observations( XCV, yCV ), Observations( XTest, yTest ) )
 
 def find_solution( solver, X, y, **kwArgs ):
-	lambdaRange = kwArgs.get( "lambdaRange", ( 0, 100 ) )
-	lambdaQuality = kwArgs.get( "lambdaQuality", 1 )
+	print( ">>> Looking for a solution..." )
+	optimizationParams = kwArgs.get( "optimizationParams", { "dummy" : None } )
+	names = []
+	values = []
+	for k, v in optimizationParams.items():
+		names.append( k )
+		values.append( v )
+		print( "{}, {}".format( k, v ) )
+
 	dataSet = split_data( X, y, **kwArgs )
 
-	lo = lambdaRange[0]
-	hi = lambdaRange[1]
-	med = lo + ( hi - lo ) / 2
-	failureRate = {}
-
-	def train_and_verify( x ):
-		print( "training with lambda: {}".format( x ), end = "" )
-		solution = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, Lambda = x, **kwArgs )
-		failureRate = solver.verify( solution, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
-		print( ", failureRate = {}".format( failureRate ) )
-		return ( solution, failureRate )
-
-	def get_solution( x ):
-		if x in failureRate:
-			return failureRate.get( x )
-		return failureRate.setdefault( x, train_and_verify( x ) )
-
+	failureRate = math.inf
 	solution = None
-	old = []
-	while hi - lo > lambdaQuality:
-		sLo = get_solution( lo )
-		sMed = get_solution( med )
-		sHi = get_solution( hi )
-		minFrIdx = np.argmin( [sLo[1], sMed[1], sHi[1]] )
-		if old == [lo, med, hi]: #unstable
-			med, solution = ( lo, sLo[0] ) if minFrIdx == 0 else ( hi, sHi[0] )
-			break
-		old = [lo, med, hi]
-		if minFrIdx == 0:
-			hi = med
-		elif minFrIdx == 2:
-			lo = med
-		else:
-			loT = lo
-			hiT = hi
-			while hiT - loT > 0.01:
-				loT = np.mean( [loT, med] )
-				hiT = np.mean( [med, hiT] )
-				sLoT = get_solution( loT )
-				sHiT = get_solution( hiT )
-				minFrIdx = np.argmin( [sLoT[1], sMed[1], sHiT[1]] )
-				if minFrIdx == 0:
-					hi = med
-					break
-				elif minFrIdx == 2:
-					lo = med
-					break
-		med = np.mean( [lo, hi] )
-		solution = sMed[0]
-	return solution, solver.verify( solution, dataSet.testSet.X, dataSet.testSet.y ), med
+	optimizationParam = None
+	for p in product( *values ):
+		op = {}
+		for i in range( len( names ) ):
+			op[names[i]] = p[i]
+		print( "testing solution for: {}".format( op ), end = "" )
+		op.update( kwArgs )
+		s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, **op )
+		fr = solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
+		if fr < failureRate:
+			failureRate = fr
+			solution = s
+			optimizationParam = op
+		print( ", failureRate = {}".format( fr ) )
+	return solution, solver.verify( solution, dataSet.testSet.X, dataSet.testSet.y ), optimizationParam
+	print( ">>> ... solution found." )
 

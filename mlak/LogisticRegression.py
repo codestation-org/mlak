@@ -42,7 +42,7 @@ def predict_one_vs_all( X, all_theta ):
 class LogisticRegressionSolver:
 	def train( self_, X, y, **kwArgs ):
 		iters = kwArgs.get( "iters", 50 )
-		Lambda = kwArgs.get( "Lambda" )
+		Lambda = kwArgs.get( "Lambda", 0 )
 		shaper = mo.DataShaper( X, y, **kwArgs )
 		thetas = []
 		X = shaper.conform( X )
