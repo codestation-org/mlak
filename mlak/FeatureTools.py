@@ -16,7 +16,7 @@ def normalize_features( X, mu, sigma ):
 
 def feature_normalize(X):
 	mu, sigma = find_normalization_params(X)
-	return normalize_features(X, mu, sigma)
+	return normalize_features(X, mu, sigma), mu, sigma
 
 
 def add_features( X, functions ):
@@ -28,7 +28,10 @@ def add_features( X, functions ):
 	X_ext = np.zeros((m, features_cnt_old + features_cnt_new))
 
 	for i in range(m):
-		X_ext[i] = add_features_single(X[i], functions)
+		val = add_features_single(X[i], functions)
+		#print("old X_ext[i] {}".format(X_ext[i]))
+		#print("new X_ext[i] {}".format(val))
+		X_ext[i] = val
 
 	return X_ext
 
@@ -38,6 +41,7 @@ def add_features_single( x, functions ):
 	xe = []
 
 	for f in functions:
+		#val = np.array(f(x)).flatten()
 		xe.append(f(x))
 
 	return x.tolist() + xe
