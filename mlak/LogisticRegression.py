@@ -4,6 +4,7 @@ import MathTools as mt
 import ModelAnalyzer as ma
 import numpy as np
 import scipy.optimize as optimize
+import ModelAnalyzer as mo
 
 def compute_cost( theta, *args ):
 	X, y, regularizationParam = args
@@ -44,21 +45,24 @@ class LogisticRegressionSolver:
 
 	def train( self_, X, y, **kwArgs ):
 		Lambda = kwArgs.get( "Lambda" )
-		dataSource = kwArgs.get( "dataSource" )
-		n = np.size( X, axis = 1 )
-		thetas = np.zeros( ( dataSource.class_count(), n ) )
-		for c in range( dataSource.class_count() ):
-			thetas[c] = optimize.fmin_cg(
+		self_._shaper = mo.DataShaper( X, y, **kwArgs )
+		thetas = []
+		X = self_._shaper.conform( X )
+		y = self_._shaper.map_labels( y )
+		for c in range( self_._shaper.class_count() ):
+			theta = optimize.fmin_cg(
 				compute_cost,
-				thetas[c], fprime = compute_grad,
+				self_._shaper.initial_theta(), fprime = compute_grad,
 				args = ( X, ( y == c ), Lambda ),
 				maxiter = self_._iterations,
 				disp = False
 			)
-		return ma.Solution( theta = thetas )
+			thetas.append( theta )
+		return ma.Solution( theta = np.array( thetas ), shaper = self_._shaper )
 
 	def verify( self_, solution, X, y ):
+		X = self_._shaper.conform( X )
 		yp = predict_one_vs_all( X, solution.theta() )
-		accuracy = np.mean( 1.0 * ( y.flatten() == yp ) )
+		accuracy = np.mean( 1.0 * ( y.flatten() == self_._shaper.labels( yp ) ) )
 		return 1 - accuracy
 

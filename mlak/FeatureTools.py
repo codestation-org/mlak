@@ -2,6 +2,18 @@ import numpy as np
 from scipy.special import expit
 
 
+def find_normalization_params( X ):
+	mu = np.mean( X, axis = 0 )
+	sigma = np.std( X, axis = 0, ddof = 0 )
+	epsilon = 0.1 ** 100
+	sigma[sigma < epsilon] = epsilon
+	return mu, sigma
+
+
+def normalize_features( X, mu, sigma ):
+	return ( X - mu ) / sigma
+
+
 def add_features( X, functions ):
 
 	m = np.size(X, axis=0)

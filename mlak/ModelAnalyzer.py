@@ -7,26 +7,58 @@ import FeatureTools as ft
 Observations = namedtuple( "Observations", "X y" )
 DataSet = namedtuple( "DataSet", "trainSet crossValidationSet testSet" )
 
+class DataShaper:
+	def __init__( self_, X, y, **kwArgs ):
+		self_._functions = kwArgs.get( "functions", [] )
+		self_._featureCount = np.size( X, axis = 1 ) + len( self_._functions ) + 1
+
+		X = ft.add_features( X, self_._functions )
+		self_._mu, self_._sigma = ft.find_normalization_params( X )
+
+	def map_labels( self_, y ):
+		self_._classes, y = np.unique( y, return_inverse = True )
+		la.columnize( y )
+		return y
+
+	def conform( self_, X ):
+		X = ft.add_features( X, self_._functions )
+		X = ft.normalize_features( X, self_._mu, self_._sigma )
+		X = la.add_ones_column( X )
+		return X
+
+	def labels( self_, y ):
+		return self_._classes[ y ]
+
+	def mu( self_ ):
+		return self_._mu
+
+	def sigma( self_ ):
+		return self_._sigma
+
+	def class_count( self_ ):
+		return len( self_._classes )
+
+	def initial_theta( self_ ):
+		return np.zeros( self_._featureCount )
+
+	def __repr__( self_ ):
+		return "Shaper( mu = {}, sigma = {}, classes = {} )".format( self_._mu, self_._sigma, self_._classes )
+
 class Solution:
 	def __init__( self_, **kwArgs ):
 		self_._theta = kwArgs.get( "theta", 0 )
-		self_._mu =  kwArgs.get( "mu", 0 )
-		self_._sigma =  kwArgs.get( "sigma", 1 )
+		self_._shaper =  kwArgs.get( "shaper", None )
 	def set( self_, **kwArgs ):
 		if "theta" in kwArgs:
 			self_._theta = kwArgs.get( "theta" )
-		if "mu" in kwArgs:
-			self_._mu = kwArgs.get( "mu" )
-		if "sigma" in kwArgs:
-			self_._sigma =  kwArgs.get( "sigma" )
+		if "shaper" in kwArgs:
+			self_._mu = kwArgs.get( "shaper" )
 	def theta( self_ ):
 		return self_._theta
-	def mu( self_ ):
-		return self_._mu
-	def sigma( self_ ):
-		return self_._sigma
+	def shaper( self_ ):
+		return self_._shaper
 	def __repr__( self_ ):
-		return "Solution( theta = {}, mu = {}, sigma = {} )".format( self_._theta, self_._mu, self_._sigma )
+		return "Solution( theta = {}, shaper = {} )".format( self_._theta, self_._shaper )
 
 # Split data to train set, cross validation set and test set.
 # *Fraction tells how much of the data shall go into given set.
@@ -52,54 +84,10 @@ def split_data( X, y, **kwArgs ):
 
 	return DataSet( Observations( XTrain, yTrain ), Observations( XCV, yCV ), Observations( XTest, yTest ) )
 
-class DataSource:
-	def __init__( self_, X, y, **kwArgs ):
-		self_._XOrig = X
-		self_._yOrig = y
-		self_._y = y
-		self_._functions = kwArgs.get( "functions", [] )
-		self_._classifier = kwArgs.get( "classifier", False )
-
-		X = ft.add_features( self_._XOrig, self_._functions )
-		X, self_._mu, self_._sigma = oa.feature_normalize( X )
-		m = np.size( X, 0 )
-		self_._X = np.c_[ np.ones( m ), X ]
-
-		if self_._classifier:
-			self_._classes, self_._y = np.unique( y, return_inverse = True )
-			la.columnize( self_._y )
-
-	def conform_data( self_, X ):
-		X = ft.add_features( X, self._functions )
-		X -= solution.mu()
-		X /= solution.sigma()
-		X = np.c_[ np.ones( m ), X ]
-		return X
-
-	def X( self_ ):
-		return self_._X
-
-	def y( self_ ):
-		return self_._y
-
-	def label( self_, y ):
-		return self_._classes[ y ]
-
-	def mu( self_ ):
-		return self_._mu
-
-	def sigma( self_ ):
-		return self_._sigma
-
-	def class_count( self_ ):
-		return len( self_._classes )
-
 def find_solution( solver, X, y, **kwArgs ):
 	lambdaRange = kwArgs.get( "lambdaRange", ( 0, 100 ) )
 	lambdaQuality = kwArgs.get( "lambdaQuality", 1 )
-
-	dataSource = DataSource( X, y, **kwArgs )
-	dataSet = split_data( dataSource.X(), dataSource.y(), **kwArgs )
+	dataSet = split_data( X, y, **kwArgs )
 
 	lo = lambdaRange[0]
 	hi = lambdaRange[1]
@@ -108,7 +96,7 @@ def find_solution( solver, X, y, **kwArgs ):
 
 	def train_and_verify( x ):
 		print( "training with lambda: {}".format( x ), end = "" )
-		solution = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, dataSource = dataSource, Lambda = x, **kwArgs )
+		solution = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, Lambda = x, **kwArgs )
 		failureRate = solver.verify( solution, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
 		print( ", failureRate = {}".format( failureRate ) )
 		return ( solution, failureRate )
@@ -150,6 +138,5 @@ def find_solution( solver, X, y, **kwArgs ):
 					break
 		med = np.mean( [lo, hi] )
 		solution = sMed[0]
-	solution.set( mu = dataSource.mu(), sigma = dataSource.sigma() )
 	return solution, solver.verify( solution, dataSet.testSet.X, dataSet.testSet.y ), med
 

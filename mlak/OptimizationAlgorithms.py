@@ -3,14 +3,6 @@ import numpy as np
 import scipy.optimize as optimize
 import LinearRegression as linReg
 
-def feature_normalize( X ):
-	mu = np.mean( X, axis = 0 )
-	sigma = np.std( X, axis = 0, ddof = 0 )
-	epsilon = 0.1 ** 100
-	sigma[sigma < epsilon] = epsilon
-	X = ( X - mu ) / sigma
-	return X, mu, sigma
-
 def gradient_descent( X, y, theta, alpha, iters, lambda_val ):
 	m = len( y )
 	J_history = np.zeros( iters )
