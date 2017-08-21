@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.special import expit
+import Terminal as term
 
 
 def find_normalization_params( X ):
@@ -20,19 +21,22 @@ def feature_normalize(X):
 
 
 def add_features( X, functions ):
-
+	print( "Adding features ..." )
 	m = np.size(X, axis=0)
 	features_cnt_old = np.size(X, axis=1)
 	features_cnt_new = np.size(functions)
 
 	X_ext = np.zeros((m, features_cnt_old + features_cnt_new))
 
-	for i in range(m):
+	p = term.Progress( m )
+	for i in range( m ):
+		next( p )
 		val = add_features_single(X[i], functions)
 		#print("old X_ext[i] {}".format(X_ext[i]))
 		#print("new X_ext[i] {}".format(val))
 		X_ext[i] = val
 
+	print( "... features added." )
 	return X_ext
 
 
