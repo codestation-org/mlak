@@ -14,6 +14,11 @@ def normalize_features( X, mu, sigma ):
 	return ( X - mu ) / sigma
 
 
+def feature_normalize(X):
+	mu, sigma = find_normalization_params(X)
+	return normalize_features(X, mu, sigma)
+
+
 def add_features( X, functions ):
 
 	m = np.size(X, axis=0)
