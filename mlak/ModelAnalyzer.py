@@ -3,6 +3,7 @@ from collections import namedtuple
 import OptimizationAlgorithms as oa
 import LinearAlgebra as la
 import FeatureTools as ft
+import inspect
 from itertools import product
 import math
 
@@ -44,8 +45,11 @@ class DataShaper:
 	def initial_theta( self_ ):
 		return np.zeros( self_._featureCount )
 
+	def __functions( self_ ):
+		return ", ".join( map( inspect.getsource, self_._functions ) )
+
 	def __repr__( self_ ):
-		return "Shaper( mu = {}, sigma = {}, classes = {} )".format( self_._mu, self_._sigma, self_._classes )
+		return "Shaper( mu = {}, sigma = {}, classes = {}, functions = [{}] )".format( self_._mu, self_._sigma, self_._classes, self_.__functions() )
 
 class Solution:
 	def __init__( self_, **kwArgs ):
