@@ -13,6 +13,7 @@ class DataShaper:
 	def __init__( self_, X, y, **kwArgs ):
 		self_._functions = kwArgs.get( "functions", [] )
 		self_._featureCount = np.size( X, axis = 1 ) + len( self_._functions ) + 1
+		self_._classes = None
 
 		print( "functions = {}".format( self_._functions ) )
 		X = ft.add_features( X, self_._functions )
