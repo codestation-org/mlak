@@ -116,6 +116,6 @@ def find_solution( solver, X, y, **kwArgs ):
 			solution = s
 			optimizationParam = op
 		print( ", failureRate = {}".format( fr ) )
-	return solution, solver.verify( solution, dataSet.testSet.X, dataSet.testSet.y ), optimizationParam
 	print( ">>> ... solution found." )
+	return solution, solver.verify( solution, dataSet.testSet.X, dataSet.testSet.y ), optimizationParam
 
