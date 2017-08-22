@@ -13,3 +13,10 @@ def sigmoid( x ):
 # Vectorized sigmoid function.
 sigmoid_v = expit
 
+def sigmoidGradient(z):
+	s = sigmoid(z)
+	g = s * (1 - s)
+	return g
+
+# Vectorized sigmoidGradient function.
+sigmoidGradient_v = expit
