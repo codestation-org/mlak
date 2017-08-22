@@ -40,23 +40,25 @@ def predict_one_vs_all( X, all_theta ):
 	return np.argmax( np.dot( X, all_theta.T ), axis = 1 )
 
 class LogisticRegressionSolver:
+	def __initial_theta( shaper ):
+		return np.zeros( ( shaper.class_count(), shaper.feature_count() + 1 ) )
+
 	def train( self_, X, y, **kwArgs ):
+		shaper = mo.DataShaper( X, y, **kwArgs )
 		iters = kwArgs.get( "iters", 50 )
 		Lambda = kwArgs.get( "Lambda", 0 )
-		shaper = mo.DataShaper( X, y, **kwArgs )
-		thetas = []
-		X = shaper.conform( X )
 		y = shaper.map_labels( y )
+		theta = kwArgs.get( "theta", LogisticRegressionSolver.__initial_theta( shaper ) )
+		X = shaper.conform( X )
 		for c in range( shaper.class_count() ):
-			theta = optimize.fmin_cg(
+			theta[c] = optimize.fmin_cg(
 				compute_cost,
-				shaper.initial_theta(), fprime = compute_grad,
+				theta[c], fprime = compute_grad,
 				args = ( X, ( y == c ), Lambda ),
 				maxiter = iters,
 				disp = False
 			)
-			thetas.append( theta )
-		return ma.Solution( theta = np.array( thetas ), shaper = shaper )
+		return ma.Solution( theta = theta, shaper = shaper )
 
 	def verify( self_, solution, X, y ):
 		X = solution.shaper().conform( X )

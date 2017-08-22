@@ -19,8 +19,10 @@ def compute_cost( X, y, theta, lambda_val ):
 	sqrErr = ( hr - y ) ** 2
 	cost = np.sum( sqrErr ) / ( 2 * m )
 
-	costReg = lambda_val / (2 * m) * (np.sum(theta * theta)-theta[0]*theta[0])
-	costReg = costReg[0]
+	costReg = 0
+	if lambda_val > 0:
+		costReg = lambda_val / (2 * m) * (np.sum(theta * theta)-theta[0]*theta[0])
+		costReg = costReg[0]
 
 	return cost + costReg
 
@@ -45,27 +47,25 @@ def compute_grad_fminCG( theta, *args ):
 	return compute_grad( args[0], args[1], theta, args[2] ).flatten()
 
 class LinearRegressionSolver:
+	def __initial_theta( shaper ):
+		return  np.zeros( shaper.feature_count() + 1 )
+
 	def train( self_, X, y, **kwArgs ):
 		iters = kwArgs.get( "iters", 50 )
 		Lambda = kwArgs.get( "Lambda", 0 )
 		shaper = mo.DataShaper( X, y, **kwArgs )
-		initial_theta = shaper.initial_theta()
+		theta = kwArgs.get( "theta", LinearRegressionSolver.__initial_theta( shaper ) )
 
 		X = shaper.conform( X )
 
-		theta = oa.gradient_descent_fminCG(X, y, initial_theta, iters, Lambda)
+		theta = oa.gradient_descent_fminCG( X, y, theta, iters, Lambda )
 
 		return ma.Solution( theta = theta, shaper = shaper )
 
 	def verify( self_, solution, X, y ):
-		y_pred = self_.predict(solution, X)
-
 		X = solution.shaper().conform( X )
-		m = np.size(y)
-
-		sqErr = np.sum((y_pred-y)**2) / m
-		return sqErr
+		return compute_cost( X, y, solution.theta(), 0 )
 
 	def predict( self_, solution, X ):
 		X = solution.shaper().conform( X )
-		return np.dot(X, solution.theta())
+		return np.dot( X, solution.theta() )

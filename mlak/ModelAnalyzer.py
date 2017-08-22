@@ -13,7 +13,9 @@ DataSet = namedtuple( "DataSet", "trainSet crossValidationSet testSet" )
 class DataShaper:
 	def __init__( self_, X, y, **kwArgs ):
 		self_._functions = kwArgs.get( "functions", [] )
-		self_._featureCount = np.size( X, axis = 1 ) + len( self_._functions ) + 1
+		if self_._functions is None:
+			self_._functions = []
+		self_._featureCount = np.size( X, axis = 1 ) + len( self_._functions )
 		self_._classes = None
 
 		X = ft.add_features( X, self_._functions )
@@ -24,10 +26,12 @@ class DataShaper:
 		la.columnize( y )
 		return y
 
-	def conform( self_, X ):
+	def conform( self_, X, **kwArgs ):
+		addOnes = kwArgs.get( "addOnes", True )
 		X = ft.add_features( X, self_._functions )
 		X = ft.normalize_features( X, self_._mu, self_._sigma )
-		X = la.add_ones_column( X )
+		if addOnes:
+			X = la.add_ones_column( X )
 		return X
 
 	def labels( self_, y ):
@@ -40,16 +44,19 @@ class DataShaper:
 		return self_._sigma
 
 	def class_count( self_ ):
+		assert self_._classes is not None, "Call shaper.map_labels( y ) first!"
 		return len( self_._classes )
 
-	def initial_theta( self_ ):
-		return np.zeros( self_._featureCount )
+	def feature_count( self_ ):
+		return self_._featureCount
 
 	def __functions( self_ ):
 		return ", ".join( map( inspect.getsource, self_._functions ) )
 
 	def __repr__( self_ ):
-		return "Shaper( mu = {}, sigma = {}, classes = {}, functions = [{}] )".format( self_._mu, self_._sigma, self_._classes, self_.__functions() )
+		return "Shaper( mu = {}, sigma = {}, classes = {}, functions = [{}] )".format(
+			self_._mu, self_._sigma, self_._classes, self_.__functions()
+		)
 
 class Solution:
 	def __init__( self_, **kwArgs ):
@@ -100,7 +107,7 @@ def find_solution( solver, X, y, **kwArgs ):
 		if type( v ) == list:
 			names.append( k )
 			if len( v ) == 0:
-				v.append( 0 )
+				v.append( None )
 			values.append( v )
 		print( "{}: {}".format( k, v ) )
 
