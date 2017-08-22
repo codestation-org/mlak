@@ -8,15 +8,13 @@ def log_v( x ):
 
 # Sigmoid function.
 def sigmoid( x ):
-	return 1 / ( 1 + np.exp( -np.array(x) ) )
+	return 1 / ( 1 + np.exp( -x ) )
 
 # Vectorized sigmoid function.
 sigmoid_v = expit
 
-def sigmoidGradient(z):
-	s = sigmoid(z)
-	g = s * (1 - s)
+def sigmoid_gradient( z ):
+	s = sigmoid_v( z )
+	g = s * ( 1 - s )
 	return g
 
-# Vectorized sigmoidGradient function.
-sigmoidGradient_v = expit

@@ -4,10 +4,9 @@ import MathTools as mt
 import ModelAnalyzer as ma
 import numpy as np
 import scipy.optimize as optimize
-import ModelAnalyzer as mo
 
 def compute_cost( theta, *args ):
-	X, y, regularizationParam = args
+	X, y, Lambda = args
 	theta = deepcopy( theta )
 	la.columnize( theta )
 
@@ -17,18 +16,18 @@ def compute_cost( theta, *args ):
 	err = -( np.dot( y.T, mt.log_v( hr ) ) + np.dot( ( 1 - y.T ), mt.log_v( 1 - hr ) ) )
 
 	theta[ 0 ] = 0
-	r = regularizationParam * np.sum( theta ** 2 ) / ( m * 2 )
+	r = Lambda * np.sum( theta ** 2 ) / ( m * 2 )
 	cost = err / m + r
 	return cost
 
 def compute_grad( theta, *args ):
-	X, y, regularizationParam = args
+	X, y, Lambda = args
 	theta = deepcopy( theta )
 	la.columnize( theta )
 	hr = mt.sigmoid_v( np.dot( X, theta ) )
 	theta[ 0 ] = 0
 	m = len( y )
-	grad = ( np.dot( X.T, ( hr - y ) ) + theta * regularizationParam ) / m
+	grad = ( np.dot( X.T, ( hr - y ) ) + theta * Lambda ) / m
 #	print( "grad = {}".format( grad.flatten() ) )
 	return grad.flatten()
 
@@ -44,7 +43,7 @@ class LogisticRegressionSolver:
 		return np.zeros( ( shaper.class_count(), shaper.feature_count() + 1 ) )
 
 	def train( self_, X, y, **kwArgs ):
-		shaper = mo.DataShaper( X, y, **kwArgs )
+		shaper = ma.DataShaper( X, y, **kwArgs )
 		iters = kwArgs.get( "iters", 50 )
 		Lambda = kwArgs.get( "Lambda", 0 )
 		y = shaper.map_labels( y )
