@@ -21,7 +21,7 @@ def load( path_ ):
 		data["X"] = dataRaw[:,0:n]
 		data["y"] = dataRaw[:,n:n + 1]
 	elif ext == "mat":
-		data = scipy_io.loadmat( "ex3data1.mat" )
+		data = scipy_io.loadmat( path_ )
 	else:
 		raise Exception( "Unknown file extension {}".format( ext ) )
 	return data

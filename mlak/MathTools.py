@@ -8,7 +8,7 @@ def log_v( x ):
 
 # Sigmoid function.
 def sigmoid( x ):
-	return 1 / ( 1 + exp( -x ) )
+	return 1 / ( 1 + np.exp( -x ) )
 
 # Vectorized sigmoid function.
 sigmoid_v = expit
