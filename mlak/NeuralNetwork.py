@@ -48,8 +48,8 @@ def compute_cost( theta, *args ):
 	r = 0
 	for t in theta:
 		r += np.sum( t[1:] ** 2 )
-	cost += Lambda * r / ( len( X ) * 2 )
-	print( "cost = {}                     \r".format( cost ), end = "" )
+	cost += Lambda * r / ( len( y ) * 2 )
+	print( "cost = {}                                \r".format( cost ), end = "" )
 	return cost
 
 def activation_derivative( a ):
@@ -83,7 +83,7 @@ def compute_grad( theta, *args ):
 	for g, t in zip( gradient, theta ):
 		t[:, 0] = 0
 		g += t * Lambda
-		g /= len( X )
+		g /= len( y )
 	return flatten_nn( gradient )
 
 def predict_one_vs_all( X, topoTheta ):

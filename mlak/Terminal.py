@@ -60,12 +60,14 @@ def plot( x_, **kwArgs ):
 			print( " |" )
 	print( "+" + "-" * barLen + "+" )
 
-def Progress( n ):
+def Progress( n, label = "" ):
 	p = 0
 	op = 0
+	cll = " " * ( len( label ) + 7 ) + "\r"
 	for i in range( n ):
 		p = int( i * 10000 / n )
 		if p != op:
-			print( "{:6.2f}%        \r".format( p / 100 ), end = "" )
+			print( label + "{:6.2f}%".format( p / 100 ) + cll, end = "" )
 			op = p
 		yield
+	print( "" )

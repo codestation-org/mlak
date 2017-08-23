@@ -58,7 +58,7 @@ class LinearRegressionSolver:
 
 		X = shaper.conform( X )
 
-		theta = oa.gradient_descent_fminCG( X, y, theta, iters, Lambda )
+		theta = oa.gradient_descent_fminCG( X, y, theta, iters, Lambda, disp = False )
 
 		return ma.Solution( theta = theta, shaper = shaper )
 
