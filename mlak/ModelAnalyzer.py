@@ -122,18 +122,18 @@ def find_solution( solver, X, y, **kwArgs ):
 		op = {}
 		for i in range( len( names ) ):
 			op[names[i]] = p[i]
-		print( "testing solution for: {}".format( op ) )
+		print( "testing solution for: {}   ".format( op ) )
 		op.update( kwArgs )
 		s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, **op )
 		if showFailureRateTrain:
 			fr = solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
-			print( "failureRateTrain = {}".format( fr ) )
+			print( "failureRateTrain = {}         ".format( fr ) )
 		fr = solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
 		if fr < failureRate:
 			failureRate = fr
 			solution = s
 			optimizationParam = op
-		print( "failureRateCV = {}".format( fr ) )
+		print( "failureRateCV = {}           ".format( fr ) )
 	print( ">>> ... solution found." )
 	return OptimizationResult( solution, optimizationParam, solver.verify( solution, dataSet.testSet.X, dataSet.testSet.y ) )
 
