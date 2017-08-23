@@ -2,6 +2,7 @@ import math
 import numpy as np
 import scipy.optimize as optimize
 
+import LinearAlgebra as la
 import MathTools as mt
 import ModelAnalyzer as ma
 
@@ -33,18 +34,18 @@ def randomize_weights( topology, theta ):
 		offset += s
 
 def compute_cost( theta, *args ):
-	X, y, topology, Lambda = args
+	X, y, topology, classCount, Lambda = args
 	theta = apply_topology( topology, theta )
-	cost = 0
-	for i, x in enumerate( X ):
-		for l in range( len( theta ) ):
-			x = np.concatenate( ( [1], x ) )
-			x = np.dot( theta[l], x )
-			x = mt.sigmoid( x )
-		yp = np.zeros( len( x ) )
-		yp[y[i]] = 1
-		err = -( np.dot( yp, mt.log_v( x ) ) + np.dot( ( 1 - yp ), mt.log_v( 1 - x ) ) )
-		cost += err
+
+	for l in range( len( theta ) ):
+		X = la.add_ones_column( X )
+		X = np.dot( X, theta[l].T )
+		X = mt.sigmoid( X )
+
+	m = len( y )
+	yp = np.zeros( ( m, classCount ) )
+	yp[np.arange( m ),y.flatten()] = 1
+	cost = np.sum( -( yp * mt.log_v( X ) + ( 1 - yp ) * mt.log_v( 1 - X ) ) )
 	r = 0
 	for t in theta:
 		r += np.sum( t[1:] ** 2 )
@@ -56,7 +57,7 @@ def activation_derivative( a ):
 	return a * ( 1 - a )
 
 def compute_grad( theta, *args ):
-	X, y, topology, Lambda = args
+	X, y, topology, classCount, Lambda = args
 	theta = apply_topology( topology, theta )
 	thetaT = []
 	for t in theta:
@@ -64,26 +65,24 @@ def compute_grad( theta, *args ):
 	gradient = []
 	for t in theta:
 		gradient.append( np.zeros( t.shape ) )
-	for i, x in enumerate( X ):
-		activation = []
-		for t in theta:
-			x = np.concatenate( ( [1], x ) )
-			activation.append( x )
-			x = np.dot( t, x )
-			x = mt.sigmoid( x )
-		yp = np.zeros( len( x ) )
-		yp[y[i]] = 1
-		delta = x - yp
-		delta.shape = ( delta.shape[0], 1 )
-		for g, t, a in zip( reversed( gradient ), reversed( thetaT ), reversed( activation ) ):
-			a.shape = ( a.shape[0], 1 )
-			g += np.dot( delta, a.T )
-			delta = np.dot( t, delta ) * activation_derivative( a )
-			delta = delta[1:]
+	activation = []
+	for t in thetaT:
+		X = la.add_ones_column( X )
+		activation.append( X )
+		X = np.dot( X, t )
+		X = mt.sigmoid( X )
+	m = len( y )
+	yp = np.zeros( ( m, classCount ) )
+	yp[np.arange( m ),y.flatten()] = 1
+	delta = ( X - yp ).T
+	for g, t, a in zip( reversed( gradient ), reversed( thetaT ), reversed( activation ) ):
+		g += np.dot( delta, a )
+		delta = np.dot( t, delta ) * activation_derivative( a.T )
+		delta = delta[1:]
 	for g, t in zip( gradient, theta ):
 		t[:, 0] = 0
 		g += t * Lambda
-		g /= len( y )
+		g /= m
 	return flatten_nn( gradient )
 
 def predict_one_vs_all( X, topoTheta ):
@@ -119,7 +118,7 @@ class NeuralNetworkSolver:
 		theta = optimize.fmin_cg(
 			compute_cost,
 			theta, fprime = compute_grad,
-			args = ( X, y, topology, Lambda ),
+			args = ( X, y, topology, shaper.class_count(), Lambda ),
 			maxiter = iters,
 			disp = False
 		)
