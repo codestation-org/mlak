@@ -74,7 +74,7 @@ def compute_grad( theta, *args ):
 		X = mt.sigmoid( X )
 	m = len( y )
 	yp = np.zeros( ( m, classCount ) )
-	yp[np.arange( m ),y.flatten()] = 1
+	yp[np.arange( m ), y.flatten()] = 1
 	delta = ( X - yp ).T
 	for g, t, a in zip( reversed( gradient ), reversed( thetaT ), reversed( activation ) ):
 		g += np.dot( delta, a )
