@@ -3,8 +3,11 @@ import math
 from collections import Counter
 
 def plot( x_, **kwArgs ):
-	x = np.array( x_, dtype = float )
-	width = kwArgs.get( "width", int( math.sqrt( len( x ) ) ) )
+	width = x_.shape[0]
+	x = np.array( x_.flatten(), dtype = float )
+	if width == len( x ):
+		width = int( math.sqrt( width ) )
+	width = kwArgs.get( "width", width )
 	label = kwArgs.get( "label", None )
 	art = kwArgs.get( "art", False )
 	sup = max( x )
