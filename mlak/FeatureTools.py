@@ -26,9 +26,9 @@ def add_features( X, functions ):
 	features_cnt_new = np.size(functions)
 
 	X_ext = np.zeros((m, features_cnt_old + features_cnt_new))
-	p = term.Progress( m, "Adding features: " )
+	#p = term.Progress( m, "Adding features: " )
 	for i in range( m ):
-		next( p )
+		#next( p )
 		val = add_features_single(X[i], functions)
 		#print("old X_ext[i] {}".format(X_ext[i]))
 		#print("new X_ext[i] {}".format(val))

@@ -13,6 +13,6 @@ def gradient_descent( X, y, theta, alpha, iters, lambda_val ):
 	return theta, J_history
 
 def gradient_descent_fminCG( X, y, theta, iters, lambda_val, **kwArgs ):
-	print( "initial theta = {}".format( theta.flatten() ) )
+	#print( "initial theta = {}".format( theta.flatten() ) )
 	return optimize.fmin_cg( linReg.compute_cost_fminCG, theta, fprime = linReg.compute_grad_fminCG, args = ( X, y, lambda_val ), maxiter = iters, **kwArgs )
 
