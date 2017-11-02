@@ -1,0 +1,195 @@
+#! /usr/bin/python3
+import sys
+sys.path.extend( [ "../../lib", "../lib", "./lib" ] )
+
+from math import sqrt
+from tkinter import *
+from PIL import Image, ImageDraw, ImageTk
+
+import argparse
+import numpy as np
+
+import NeuralNetwork as nn
+import ModelAnalyzer as ma
+
+import DataIO as dio
+import Terminal as term
+
+def predict( solver, solution, X, y, n ):
+	x = X[n]
+	y = y[n]
+	yp = solver.predict( solution, np.array( [ x ] ) )[0]
+	if yp != y:
+		term.plot( x, art = True, label = "n:{} p:{} e:{}".format( n, yp, y ) )
+		input()
+	return
+	plt.title( "Glyph {} guessed as {}".format( y, yp ) )
+	x.shape = ( 28, 28 )
+	plt.imshow( x )
+	plt.show()
+
+
+class DrawingPad:
+	imgSize = 480
+	width = 48
+	def __init__( self_, **kwArgs ):
+		self_._b1 = "up"
+		self_._xold = None
+		self_._yold = None
+		self_._img = None
+		self_._imgTk = None
+		self_._solver = kwArgs.get( "solver", None )
+		self_._solution = kwArgs.get( "solution", None )
+		self_._size = kwArgs.get( "size", int( sqrt( self_._solution.theta()[0][0] ) ) if self_._solution else None )
+		self_._labels = kwArgs.get( "labels", None )
+		self_._repeat = kwArgs.get( "repeat", 0 )
+		self_._i = 0
+
+	def run( self_ ):
+		self_._root = Tk()
+		drawing_area = Canvas( self_._root, width = DrawingPad.imgSize, height = DrawingPad.imgSize, bg = 'white' )
+		drawing_area.pack()
+		self_._img = Image.new( "L", ( DrawingPad.imgSize, DrawingPad.imgSize ), 255 )
+		drawing_area.pack()
+		drawing_area.bind( "<Motion>", self_.motion )
+		drawing_area.bind( "<ButtonPress-1>", self_.b1down )
+		drawing_area.bind( "<ButtonRelease-1>", self_.b1up )
+		drawing_area.bind( "<ButtonPress-3>", self_.b3down )
+		if self_._labels:
+			self_._data = { "X": [], "y": [] }
+			print( "{}".format( self_.current_label() ) )
+
+		self_._root.mainloop()
+
+	def b1down( self_, event ):
+		self_._b1 = "down"	# you only want to draw when the button is down
+								# because "Motion" events happen -all the time-
+
+	def b3down( self_, event ):
+		if self_._solution:
+			self_.predict()
+		elif self_._labels:
+			self_.make_sample()
+		event.widget.delete( "all" )
+		self_._img = Image.new( "L", ( DrawingPad.imgSize, DrawingPad.imgSize ), 255 )
+
+	def b1up( self_, event ):
+		self_._b1 = "up"
+		self_._xold = None		   # reset the line when you let go of the button
+		self_._yold = None
+
+	def motion( self_, event ):
+		if self_._b1 == "down":
+			if self_._xold is not None and self_._yold is not None:
+				draw = ImageDraw.Draw( self_._img )
+				draw.line( [ self_._xold, self_._yold, event.x, event.y ], 0, width = DrawingPad.width )
+				draw.ellipse(
+					( self_._xold - DrawingPad.width / 2, self_._yold - DrawingPad.width / 2, self_._xold + DrawingPad.width / 2, self_._yold + DrawingPad.width / 2 ),
+					fill = 0
+				)
+				draw.ellipse( ( event.x - DrawingPad.width / 2, event.y - DrawingPad.width / 2, event.x + DrawingPad.width / 2, event.y + DrawingPad.width / 2 ), fill = 0 )
+				self_._imgTk = ImageTk.PhotoImage( self_._img )
+				event.widget.create_image( 0, 0, anchor = "nw", image = self_._imgTk )
+				event.widget.pack()
+			self_._xold = event.x
+			self_._yold = event.y
+
+	def get_drawing( self_ ):
+		return 255 - np.asarray( self_._img.resize( ( self_._size, self_._size ), Image.ANTIALIAS ) ).flatten()
+
+	def predict( self_ ):
+		d = self_.get_drawing()
+		term.plot( d, art = True, label = "{}".format( self_._solver.predict( self_._solution, np.array( [ d ] ) )[0] ) )
+
+	def make_sample( self_ ):
+		d = self_.get_drawing()
+		term.plot( d, art = True )
+		self_._data["X"].append( d )
+		self_._data["y"].append( self_.current_label() )
+		self_._i += 1
+		if self_._i >= ( len( self_._labels ) * self_._repeat ):
+			self_._root.quit()
+			self_._data["X"] = np.array( self_._data["X"] )
+			self_._data["y"] = np.array( self_._data["y"] )
+			return
+		print( "{}".format( self_.current_label() ) )
+
+	def current_label( self_ ):
+		l = self_._labels[self_._i // self_._repeat]
+		return l
+
+def ex_nn():
+	parser = argparse.ArgumentParser(
+		description = "NeuralNetwork experimentation tool\n\n"
+		"Example invocations:\n"
+		"  {0} -m classA,classB,classC -i 30 -d train_data_ABC.p\n"
+		"  {0} -d train_data.p -s solution_ABC.p -i 100 -t 40,25 -l 1,3,10\n"
+		"  {0} -s solution_ABC.p -x".format( sys.argv[0] ),
+		formatter_class = argparse.RawTextHelpFormatter
+	)
+	parser.add_argument( "-d", "--data-set", metavar = "path", type = str, help = "Dataset for training." )
+	parser.add_argument( "-s", "--solution", metavar = "path", type = str, help = "Store/load solution path." )
+	parser.add_argument( "-t", "--topology", metavar = "topo", type = str, help = "NeuralNetwork topologies to test." )
+	parser.add_argument( "-l", "--Lambda", metavar = "lambda", type = str, help = "Values of regularization parameter to test." )
+	parser.add_argument( "-x", "--life-demo", help = "Run life recoginition demo.", action = 'store_true' )
+	parser.add_argument( "-m", "--make", metavar = "labels", type = str, help = "Prepare dataset yourself." )
+	parser.add_argument( "-i", "--iterations", metavar = "num", type = int, help = "Maximum number of iterations." )
+	parser.set_defaults( iterations = 50 )
+	parser.set_defaults( life_demo = False )
+	args = parser.parse_args()
+
+	topology = []
+	if args.topology:
+		topology = list( map( int, args.topology.split( "," ) ) )
+	Lambda = [1]
+	if args.Lambda:
+		Lambda = list( map( float, args.Lambda.split( "," ) ) )
+
+	if args.make:
+		labels = list( args.make.split( "," ) )
+		lifeDemo = DrawingPad( labels = labels, repeat = args.iterations, size = 20 )
+		lifeDemo.run()
+		dio.save( args.data_set, lifeDemo._data )
+		return
+
+	solution = None
+	solver = nn.NeuralNetworkSolver()
+
+	if args.solution:
+		try:
+			if input( "Load solution?: " ) == "y":
+				solution = dio.load( args.solution )
+		except:
+			pass
+
+	if args.life_demo:
+		lifeDemo = DrawingPad( solver = solver, solution = solution )
+		lifeDemo.run()
+		sys.exit( 0 )
+
+	if not args.data_set:
+		print( "Data set not set." )
+		return
+	rawData = dio.load( args.data_set )
+	X_orig = rawData["X"]#[:10]
+	y_orig = rawData["y"]#[:10]
+
+	if not solution:
+		optimizationResults = ma.find_solution(
+			solver, X_orig, y_orig, showFailureRateTrain = True, iters = args.iterations,
+			optimizationParams = {
+				"nnTopology": [topology],
+				"Lambda": Lambda,
+				"functions": [
+				]
+			}
+		)
+		solution = optimizationResults.solution
+		if args.solution:
+			dio.save( args.solution, solution )
+	print( "solution = {}".format( solution ) )
+	for i in range( 60000 ):
+		predict( solver, solution, X_orig, y_orig, i )
+
+ex_nn()
+
