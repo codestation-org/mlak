@@ -21,17 +21,12 @@ def predict( solver, solution, X, y, n ):
 	yp = solver.predict( solution, np.array( [ x ] ) )[0]
 	if yp != y:
 		term.plot( x, art = True, label = "n:{} p:{} e:{}".format( n, yp, y ) )
-		input()
-	return
-	plt.title( "Glyph {} guessed as {}".format( y, yp ) )
-	x.shape = ( 28, 28 )
-	plt.imshow( x )
-	plt.show()
-
+		return input( "Press `Enter` to continue or `q` followed by `Enter` to quit: " ) != "q"
+	return True
 
 class DrawingPad:
 	imgSize = 480
-	width = 48
+	width = 40
 	def __init__( self_, **kwArgs ):
 		self_._b1 = "up"
 		self_._xold = None
@@ -134,8 +129,12 @@ def ex_nn():
 	parser.add_argument( "-x", "--life-demo", help = "Run life recoginition demo.", action = 'store_true' )
 	parser.add_argument( "-m", "--make", metavar = "labels", type = str, help = "Prepare dataset yourself." )
 	parser.add_argument( "-i", "--iterations", metavar = "num", type = int, help = "Maximum number of iterations." )
+	parser.add_argument( "-v", "--verbose", help = "Increase program verbosity level.", action = 'store_true' )
+	parser.add_argument( "-D", "--debug", help = "Print all debuging information.", action = 'store_true' )
 	parser.set_defaults( iterations = 50 )
 	parser.set_defaults( life_demo = False )
+	parser.set_defaults( verbose = False )
+	parser.set_defaults( debug = False )
 	args = parser.parse_args()
 
 	topology = []
@@ -187,9 +186,11 @@ def ex_nn():
 		solution = optimizationResults.solution
 		if args.solution:
 			dio.save( args.solution, solution )
-	print( "solution = {}".format( solution ) )
-	for i in range( 60000 ):
-		predict( solver, solution, X_orig, y_orig, i )
+	if args.debug:
+		print( "solution = {}".format( solution ) )
+	for i in range( len( y_orig ) ):
+		if not predict( solver, solution, X_orig, y_orig, i ):
+			return
 
 ex_nn()
 
