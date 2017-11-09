@@ -26,13 +26,10 @@ class AbstractModel:
 class AbstractSaveable:
 
     #loads model; name should be unique and valid filename; internal storage structure it up to model
-
     def load(path, name):
         raise NotImplementedException()
 
-
     #saves model; name should be unique and valid filename; internal storage structure it up to model
-
     def save(path, name):
         raise NotImplementedException()
 
@@ -44,6 +41,5 @@ class AbstractEvaluableModel(AbstractModel):
     # this is to be thinked over, if it's a good interface, since valuation depend on model
     # maybe better solution is to create different interfaces
     #     depending on type of problem and result meaning
-
     def evaluate(self, X, y):
         raise NotImplementedException()
