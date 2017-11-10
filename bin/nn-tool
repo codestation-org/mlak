@@ -2,6 +2,7 @@
 import sys
 sys.path.extend( [ "../../lib", "../lib", "./lib" ] )
 
+import traceback
 from math import sqrt
 from tkinter import *
 from PIL import Image, ImageDraw, ImageTk
@@ -113,84 +114,111 @@ class DrawingPad:
 		l = self_._labels[self_._i // self_._repeat]
 		return l
 
-def ex_nn():
-	parser = argparse.ArgumentParser(
-		description = "NeuralNetwork experimentation tool\n\n"
-		"Example invocations:\n"
-		"  {0} -m classA,classB,classC -i 30 -d train_data_ABC.p\n"
-		"  {0} -d train_data.p -s solution_ABC.p -i 100 -t 40,25 -l 1,3,10\n"
-		"  {0} -s solution_ABC.p -x".format( sys.argv[0] ),
-		formatter_class = argparse.RawTextHelpFormatter
-	)
-	parser.add_argument( "-d", "--data-set", metavar = "path", type = str, help = "Dataset for training." )
-	parser.add_argument( "-s", "--solution", metavar = "path", type = str, help = "Store/load solution path." )
-	parser.add_argument( "-t", "--topology", metavar = "topo", type = str, help = "NeuralNetwork topologies to test." )
-	parser.add_argument( "-l", "--Lambda", metavar = "lambda", type = str, help = "Values of regularization parameter to test." )
-	parser.add_argument( "-x", "--life-demo", help = "Run life recoginition demo.", action = 'store_true' )
-	parser.add_argument( "-m", "--make", metavar = "labels", type = str, help = "Prepare dataset yourself." )
-	parser.add_argument( "-i", "--iterations", metavar = "num", type = int, help = "Maximum number of iterations." )
-	parser.add_argument( "-v", "--verbose", help = "Increase program verbosity level.", action = 'store_true' )
-	parser.add_argument( "-D", "--debug", help = "Print all debuging information.", action = 'store_true' )
-	parser.set_defaults( iterations = 50 )
-	parser.set_defaults( life_demo = False )
-	parser.set_defaults( verbose = False )
-	parser.set_defaults( debug = False )
-	args = parser.parse_args()
+def create( args ):
+	labels = list( args.classes.split( "," ) )
+	lifeDemo = DrawingPad( labels = labels, repeat = args.samples, size = args.size )
+	lifeDemo.run()
+	dio.save( args.data_set, lifeDemo._data )
 
-	topology = []
-	if args.topology:
-		topology = list( map( int, args.topology.split( "," ) ) )
-	Lambda = [1]
-	if args.Lambda:
-		Lambda = list( map( float, args.Lambda.split( "," ) ) )
-
-	if args.make:
-		labels = list( args.make.split( "," ) )
-		lifeDemo = DrawingPad( labels = labels, repeat = args.iterations, size = 20 )
-		lifeDemo.run()
-		dio.save( args.data_set, lifeDemo._data )
-		return
-
-	solution = None
+def train( args ):
+	topology = list( map( int, args.topology.split( "," ) ) )
+	Lambda = list( map( float, args.Lambda.split( "," ) ) )
 	solver = nn.NeuralNetworkSolver()
-
-	if args.solution:
-		try:
-			if input( "Load solution?: " ) == "y":
-				solution = dio.load( args.solution )
-		except:
-			pass
-
-	if args.life_demo:
-		lifeDemo = DrawingPad( solver = solver, solution = solution )
-		lifeDemo.run()
-		sys.exit( 0 )
-
-	if not args.data_set:
-		print( "Data set not set." )
-		return
 	rawData = dio.load( args.data_set )
-	X_orig = rawData["X"]#[:10]
-	y_orig = rawData["y"]#[:10]
-
-	if not solution:
-		optimizationResults = ma.find_solution(
-			solver, X_orig, y_orig, showFailureRateTrain = True, iters = args.iterations,
-			optimizationParams = {
-				"nnTopology": [topology],
-				"Lambda": Lambda,
-				"functions": [
-				]
-			}
-		)
-		solution = optimizationResults.solution
-		if args.solution:
-			dio.save( args.solution, solution )
+	X_orig = rawData["X"]
+	y_orig = rawData["y"]
+	optimizationResults = ma.find_solution(
+		solver, X_orig, y_orig, showFailureRateTrain = True, iters = args.iterations,
+		optimizationParams = {
+			"nnTopology": [topology],
+			"Lambda": Lambda,
+			"functions": [
+			]
+		}
+	)
+	solution = optimizationResults.solution
+	dio.save( args.solution, solution )
 	if args.debug:
 		print( "solution = {}".format( solution ) )
 	for i in range( len( y_orig ) ):
 		if not predict( solver, solution, X_orig, y_orig, i ):
 			return
 
-ex_nn()
+def test( args ):
+	solver = nn.NeuralNetworkSolver()
+	solution = dio.load( args.solution )
+	rawData = dio.load( args.data_set )
+	X_orig = rawData["X"]
+	y_orig = rawData["y"]
+	for i in range( len( y_orig ) ):
+		if not predict( solver, solution, X_orig, y_orig, i ):
+			return
+
+def show( args ):
+	pass
+
+def live( args ):
+	solver = nn.NeuralNetworkSolver()
+	solution = dio.load( args.solution )
+	lifeDemo = DrawingPad( solver = solver, solution = solution )
+	lifeDemo.run()
+
+def main():
+	parser = argparse.ArgumentParser(
+		description = "NeuralNetwork experimentation tool\n\n"
+		"Example invocations:\n"
+		"  {0} create -l classA,classB,classC -n 30 -d train_data_ABC.p\n"
+		"  {0} train -d train_data.p -s solution_ABC.p -i 100 -t 40,25 -l 1,3,10\n"
+		"  {0} test -d train_data.p -s solution_ABC.p\n"
+		"  {0} show -d train_data.p -z 3 -s solution_ABC.p\n"
+		"  {0} live -s solution_ABC.p".format( sys.argv[0] ),
+		formatter_class = argparse.RawTextHelpFormatter
+	)
+	subparsers = parser.add_subparsers()
+
+	parserCreate = subparsers.add_parser( "create", help = "Prepare new batch of training samples." )
+	parserCreate.add_argument( "-d", "--data-set", metavar = "path", type = str, required = True, help = "Output file for created data set." )
+	parserCreate.add_argument( "-c", "--classes", metavar = "labels", type = str, required = True, help = "List of classes to be added to new data set." )
+	parserCreate.add_argument( "-n", "--samples", metavar = "num", type = int, required = True, help = "Number of samples per class." )
+	parserCreate.add_argument( "-r", "--size", metavar = "size", type = int, required = True, help = "Single sample resolution." )
+	parserCreate.set_defaults( func = create )
+
+	parserTrain = subparsers.add_parser( "train", help = "Train given model on given data." )
+	parserTrain.add_argument( "-d", "--data-set", metavar = "path", type = str, required = True, help = "Dataset for training." )
+	parserTrain.add_argument( "-s", "--solution", metavar = "path", type = str, required = True, help = "Store solution path." )
+	parserTrain.add_argument( "-t", "--topology", metavar = "topo", type = str, required = True, help = "NeuralNetwork topologies to test." )
+	parserTrain.add_argument( "-l", "--Lambda", metavar = "lambda", type = str, required = True, help = "Values of regularization parameter to test." )
+	parserTrain.add_argument( "-i", "--iterations", metavar = "num", type = int, help = "Maximum number of iterations." )
+	parserTrain.set_defaults( iterations = 50 )
+	parserTrain.set_defaults( func = train )
+
+	parserTest = subparsers.add_parser( "test", help = "Test trained model against given data." )
+	parserTest.add_argument( "-d", "--data-set", metavar = "path", type = str, required = True, help = "Dataset to test a model against." )
+	parserTest.add_argument( "-s", "--solution", metavar = "path", type = str, required = True, help = "Path to solution to test." )
+	parserTest.set_defaults( func = test )
+
+	parserShow = subparsers.add_parser( "show", help = "Show sample data, optionally with invalid predictions from model." )
+	parserShow.add_argument( "-d", "--data-set", metavar = "path", type = str, required = True, help = "Dataset for training." )
+	parserShow.add_argument( "-s", "--solution", metavar = "path", type = str, help = "Load solution path." )
+	parserShow.add_argument( "-z", "--zoom", metavar = "level", type = int, help = "Zoom level." )
+	parserShow.set_defaults( func = show )
+
+	parserLive = subparsers.add_parser( "live", help = "Run live test for given solution." )
+	parserLive.add_argument( "-s", "--solution", metavar = "path", type = str, required = True, help = "Solution to use for live test." )
+	parserLive.set_defaults( func = live )
+
+	parser.add_argument( "-v", "--verbose", help = "Increase program verbosity level.", action = 'store_true' )
+	parser.add_argument( "-D", "--debug", help = "Print all debuging information.", action = 'store_true' )
+	parser.set_defaults( verbose = False )
+	parser.set_defaults( debug = False )
+	args = parser.parse_args()
+	args.func( args )
+	return
+
+if __name__ == "__main__":
+	try:
+		main()
+	except Exception:
+		traceback.print_exc( file = sys.stdout )
+		sys.exit( 1 )
 
