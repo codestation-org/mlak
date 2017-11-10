@@ -64,7 +64,20 @@ def test( args ):
 			return
 
 def show( args ):
-	pass
+	solution = None
+	solver = nn.NeuralNetworkSolver()
+	yp = None
+
+	rawData = dio.load( args.data_set )
+	X_orig = rawData["X"]
+	y_orig = rawData["y"]
+
+	if args.solution:
+		solution = dio.load( args.solution )
+		yp = solver.predict( solution, X_orig )
+
+	se = visual.SampleEditor( X_orig, y_orig, zoom = args.zoom, yPredict = yp )
+	se.run()
 
 def live( args ):
 	solver = nn.NeuralNetworkSolver()
@@ -110,6 +123,7 @@ def main():
 	parserShow.add_argument( "-d", "--data-set", metavar = "path", type = str, required = True, help = "Dataset for training." )
 	parserShow.add_argument( "-s", "--solution", metavar = "path", type = str, help = "Load solution path." )
 	parserShow.add_argument( "-z", "--zoom", metavar = "level", type = int, help = "Zoom level." )
+	parserShow.set_defaults( zoom = 1 )
 	parserShow.set_defaults( func = show )
 
 	parserLive = subparsers.add_parser( "live", help = "Run live test for given solution." )

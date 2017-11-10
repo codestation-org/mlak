@@ -94,3 +94,105 @@ class DrawingPad:
 	def current_label( self_ ):
 		l = self_._labels[self_._i // self_._repeat]
 		return l
+
+class SampleEditor:
+	def __init__( self_, X, y, **kwArgs ):
+		self_._X = X
+		self_._y = y
+		self_._yPredict = kwArgs.get( "yPredict", y )
+		self_._winWidth = 480
+		self_._winHeight = self_._winWidth
+		self_._sampleSize = kwArgs.get( "size", int( sqrt( len( self_._X[0] ) ) ) )
+		self_._zoom = kwArgs.get( "zoom", 1 )
+		print( "sampleSize = {}".format( self_._sampleSize ) )
+
+	def run( self_ ):
+		self_._root = Tk()
+		self_._canvas = Canvas( self_._root, width = self_._winWidth, height = self_._winHeight, bg = 'white' )
+		vbar = Scrollbar( self_._root, orient = VERTICAL )
+		vbar.pack( side = RIGHT, fill = Y )
+		vbar.config( command = self_._canvas.yview )
+		self_._canvas.pack( side = LEFT, expand = YES, fill = BOTH )
+		#self_._img = Image.new( "L", ( self_._winWidth, self_._winWidth ), 255 )
+		self_._canvas.bind( "<Configure>", self_.on_resize )
+		self_._canvas.bind( "<Motion>", self_.on_motion )
+		self_._canvas.bind( "<ButtonPress-1>", self_.on_b1down )
+		self_._canvas.bind( "<MouseWheel>", self_.on_mousewheel )
+		self_._canvas.bind( "<ButtonPress-4>", self_.on_mousewheel )
+		self_._canvas.bind( "<ButtonPress-5>", self_.on_mousewheel )
+		self_._canvas.config( yscrollcommand = vbar.set, yscrollincrement = self_._sampleSize / 2 * self_._zoom )
+		self_._imgs = []
+		for x in self_._X:
+			x = self_.normalize( x )
+			img = ImageTk.PhotoImage(
+				image = Image.fromarray( x, mode = "L" ).resize( ( self_._sampleSize * self_._zoom, self_._sampleSize * self_._zoom ), Image.ANTIALIAS )
+			)
+			self_._imgs.append( img )
+		self_.paint()
+		self_._root.mainloop()
+
+	def paint( self_ ):
+		borderWidth = 2
+		ss = self_._sampleSize * self_._zoom + borderWidth
+		ssy = ss
+		noSamples = len( self_._y )
+		columns = self_._winWidth // ss
+		rows = noSamples // columns
+		realHeight = rows * ssy
+		self_._canvas.delete( "all" )
+		self_._canvas.config( scrollregion = ( 0, 0, columns * ss, realHeight ) )
+		for c in range( columns ):
+			self_._canvas.create_line( c * ss, 0, c * ss, realHeight, fill = 'gray', width = borderWidth )
+		for r in range( rows ):
+			self_._canvas.create_line( 0, r * ssy, ss * columns, r * ssy, fill = 'gray', width = borderWidth )
+		for i in range( noSamples ):
+			c = ( i % columns )
+			r = ( i // columns )
+			self_._canvas.create_text(
+				ss * c,
+				ssy * r,
+				anchor = "nw",
+				text = "{}".format( self_._y[i][0] if type( self_._y[i] ) == list else self_._y[i] )
+			)
+			self_._canvas.create_image(
+				ss * c,
+				ssy * r,
+				anchor = "nw",
+				image = self_._imgs[i]
+			)
+			if self_._yPredict is not None and self_._y[i] != self_._yPredict[i]:
+				self_._canvas.create_rectangle(
+					c * ss - borderWidth / 2,
+					r * ssy - borderWidth / 2,
+					( c + 1 ) * ss - borderWidth / 2,
+					( r + 1 ) * ssy - borderWidth / 2,
+					outline = 'red', width = 2
+				)
+
+	def normalize( self_, x ):
+		x = np.array( x, dtype = np.float32 )
+		sup = max( x )
+		inf = min( x )
+		r = sup - inf
+		x *= 255
+		x /= r
+		inf = min( x )
+		if inf < 0:
+			x -= inf
+		x = np.array( x, dtype = np.int8 )
+		x.shape = ( self_._sampleSize, self_._sampleSize )
+		return x
+
+	def on_resize( self_, event ):
+		self_._winWidth = self_._root.winfo_width()
+		self_._winHeight = self_._root.winfo_height()
+		self_.paint()
+
+	def on_motion( self_, event ):
+		pass
+
+	def on_b1down( self_, event ):
+		print( "on_b1down" )
+
+	def on_mousewheel( self_, event ):
+		self_._canvas.yview_scroll( -1 if event.num == 4 else 1, "units" )
