@@ -24,7 +24,7 @@ def flatten_nn( theta ):
 
 def randomize_weights( topology, theta ):
 	offset = 0
-	ss = math.sqrt( 60 )
+	ss = math.sqrt( 6 )
 	for i in range( 1, len( topology ) ):
 		rows = topology[i]
 		cols = topology[i - 1] + 1
