@@ -16,7 +16,7 @@ import json
 from collections import OrderedDict
 
 class Logger:
-	
+
 	default_log_file_name = "default.log"
 	default_log_file_ext  = "log"
 	default_log_dir       = "logs/"
@@ -43,22 +43,22 @@ class Logger:
 			write_to_file(log_full_path, json)
 		else:
 			append_to_file(log_full_path, json)
-				
-		
+
+
 	def get_json(data, files):
 		gitcurrenthash, gitchanges = get_git_hash_and_changes()	
 		jsonContent = OrderedDict([
 			('date', get_current_datetime()),
-			('data', data),
 			('git', OrderedDict([
-				('currenthash', gitcurrenthash),
-				('changes',     gitchanges)
-			])),
+					('currenthash', gitcurrenthash),
+					('changes',     gitchanges)
+				])
+			),
+			('data', data),
 			('files', Logger.get_files_list(files))
-			]
-		)
+		])
 		return json.dumps(jsonContent).replace('\n', ' \\n ')
-		
+
 	def get_files_list(files):
 		fileList = []
 		for filename in files:
@@ -80,7 +80,7 @@ def write_to_file(path, content):
 	obj = open(path, 'wb')
 	obj.write(content.encode())
 	obj.close
-	
+
 
 def append_to_file(path, content):
 	obj = open(path, 'ab')
