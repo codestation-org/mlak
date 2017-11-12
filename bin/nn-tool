@@ -52,12 +52,13 @@ def train( args ):
 		showFailureRateTrain = True,
 		iters = args.iterations,
 		optimizationParams = {
-			"nnTopology": [topology],
+			"nnTopology": topology,
 			"Lambda": Lambda,
 			"functions": [
 			]
 		},
-		files = [ args.data_set ]
+		files = [ args.data_set ],
+		engine = solver.__class__.__name__
 	)
 	solution = optimizationResults.solution
 	dio.save( args.solution, solution )
@@ -122,7 +123,7 @@ def main():
 	parserTrain = subparsers.add_parser( "train", help = "Train given model on given data." )
 	parserTrain.add_argument( "-d", "--data-set", metavar = "path", type = str, required = True, help = "Dataset for training." )
 	parserTrain.add_argument( "-s", "--solution", metavar = "path", type = str, required = True, help = "Store solution path." )
-	parserTrain.add_argument( "-t", "--topology", metavar = "topo", type = str, required = True, help = "NeuralNetwork topologies to test." )
+	parserTrain.add_argument( "-t", "--topology", metavar = "topo", type = str, required = True, action = "append", help = "NeuralNetwork topologies to test." )
 	parserTrain.add_argument( "-l", "--Lambda", metavar = "lambda", type = str, required = True, help = "Values of regularization parameter to test." )
 	parserTrain.add_argument( "-i", "--iterations", metavar = "num", type = int, help = "Maximum number of iterations." )
 	parserTrain.set_defaults( iterations = 50 )
