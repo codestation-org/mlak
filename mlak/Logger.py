@@ -14,6 +14,7 @@ import datetime
 import os
 import json
 from collections import OrderedDict
+import DataIO as dio
 
 class Logger:
 
@@ -26,7 +27,7 @@ class Logger:
 	def log(data, files, **kwArgs):
 
 		log_file_name = kwArgs.get("log_file_name", Logger.default_log_file_name)
-		log_file_ext  = kwArgs.get("log_dir", Logger.default_log_file_ext)
+		log_file_ext  = kwArgs.get("log_file_ext", Logger.default_log_file_ext)
 		log_dir       = kwArgs.get("log_dir", Logger.default_log_dir)
 		split         = kwArgs.get("split", Logger.default_split)
 
@@ -40,9 +41,9 @@ class Logger:
 		json = Logger.get_json(data, files) + '\n'
 
 		if split:
-			write_to_file(log_full_path, json)
+			dio.write_text_to_file(log_full_path, json)
 		else:
-			append_to_file(log_full_path, json)
+			dio.append_text_to_file(log_full_path, json)
 
 
 	def get_json(data, files):
@@ -65,7 +66,7 @@ class Logger:
 			fileList.append(
 				OrderedDict([
 					('filename', filename),
-					('hash',     file_checksum_md5(filename))
+					('hash',     dio.get_file_md5(filename))
 				])
 			)
 		return fileList
@@ -76,29 +77,8 @@ class Logger:
 		return txt1 + '-' + txt2[:6]
 
 
-def write_to_file(path, content):
-	obj = open(path, 'wb')
-	obj.write(content.encode())
-	obj.close
-
-
-def append_to_file(path, content):
-	obj = open(path, 'ab')
-	obj.write(content.encode())
-	obj.close
-
-
 def get_current_datetime():
 	return datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-
-
-def file_checksum_md5(filename):
-    md5 = hashlib.md5()
-    with open(filename,'rb') as f: 
-        for chunk in iter(lambda: f.read(8192), b''): 
-            md5.update(chunk)
-    return md5.hexdigest()
-
 
 def get_git_hash_and_changes():
 	currenthash = subprocess.check_output(shlex.split('git rev-parse HEAD'))
