@@ -101,7 +101,7 @@ def predict_one_vs_all( X, topoTheta ):
 class NeuralNetworkSolver:
 	def __initial_theta( shaper, **kwArgs ):
 		topology = kwArgs.get( "nnTopology", [] )
-		topology = list( map( int, args.topology.split( "," ) ) )
+		topology = list( map( int, topology.split( "," ) ) )
 		topology = [shaper.feature_count()] + topology + [shaper.class_count()]
 		s = 0
 		for i in range( 1, len( topology ) ):

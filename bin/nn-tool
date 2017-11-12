@@ -48,13 +48,16 @@ def train( args ):
 	X_orig = rawData["X"]
 	y_orig = rawData["y"]
 	optimizationResults = ma.find_solution(
-		solver, X_orig, y_orig, showFailureRateTrain = True, iters = args.iterations,
+		solver, X_orig, y_orig,
+		showFailureRateTrain = True,
+		iters = args.iterations,
 		optimizationParams = {
 			"nnTopology": [topology],
 			"Lambda": Lambda,
 			"functions": [
 			]
-		}
+		},
+		files = [ args.data_set ]
 	)
 	solution = optimizationResults.solution
 	dio.save( args.solution, solution )

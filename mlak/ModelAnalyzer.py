@@ -6,6 +6,7 @@ import FeatureTools as ft
 import inspect
 from itertools import product
 import math
+from Logger import Logger
 
 Observations = namedtuple( "Observations", "X y" )
 DataSet = namedtuple( "DataSet", "trainSet crossValidationSet testSet" )
@@ -135,6 +136,15 @@ def find_solution( solver, X, y, **kwArgs ):
 			fr = solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
 			print( "failureRateTrain = {}         ".format( fr ) )
 		fr = solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
+		op.pop( "optimizationParams" )
+		op.pop( "files" )
+		Logger.log(
+			data = {
+				"profile": op,
+				"failureRateCV": fr,
+			},
+			files = kwArgs.get( "files", [] )
+		)
 		if fr < failureRate:
 			failureRate = fr
 			solution = s
