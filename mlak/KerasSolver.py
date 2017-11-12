@@ -120,6 +120,8 @@ class DenseParser:
 	args = ( Integer, ), ( Text, )
 	grammar = [ K( "Dense" ), K( "N" ) ], params( *args )
 	def make( self_, model, **kwArgs ):
+		model.add( Flatten( **kwArgs ) )
+		kwArgs.pop( "input_shape", None )
 		model.add( Dense( self_.values[0], **kwArgs ) )
 
 class SoftmaxParser:
