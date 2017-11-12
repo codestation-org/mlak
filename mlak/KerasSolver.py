@@ -149,6 +149,8 @@ class KerasSolver:
 				first = False
 			else:
 				l.make( model )
+		if first:
+			model.add( Flatten( input_shape = ( sampleSize, sampleSize, 1 ) ) )
 		model.add( Dense( shaper.class_count(), activation = 'softmax' ) )
 		model.compile( loss = 'categorical_crossentropy',
 			optimizer = 'adam',
@@ -168,7 +170,7 @@ class KerasSolver:
 		X = shaper.conform( X, addOnes = False )
 		X = X.reshape( X.shape[0], sampleSize, sampleSize, 1 )
 		X = X.astype('float32')
-		model.fit( X, y, batch_size = 64, epochs = 20, verbose=1)
+		model.fit( X, y, batch_size = 64, epochs = 20, verbose = 1 )
 		return ma.Solution( model = model, shaper = shaper )
 
 	def verify( self_, solution, X, y ):
