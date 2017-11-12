@@ -43,6 +43,9 @@ class Float( Symbol ):
 class Integer( Symbol ):
 	regex = re.compile( "\\d+" )
 
+class Text( Symbol ):
+	regex = re.compile( "[\\w\\d\\=]+" )
+
 def params( required_, optional_ = () ):
 	typeRule = ( required_[0], )
 	for t in required_[1:]:
@@ -61,7 +64,14 @@ def coerce( layer ):
 				elif d[i] == Float:
 					layer.values[i] = float( layer.values[i] )
 				else:
-					layer.values[i] = str( layer.values[i] )
+					s = str( layer.values[i] )
+					if s.find( "=" ) >= 0:
+						if not hasattr( layer, "kwArgs" ):
+							layer.kwArgs = {}
+						s = s.split( "=", 1 )
+						layer.kwArgs[s[0]] = s[1]
+					else:
+						layer.values[i] = s
 		else:
 			if d[0] == Integer:
 				layer.values = int( layer.values )
@@ -79,10 +89,14 @@ def coerce( layer ):
 	return layer
 
 class ConvolutionParser:
-	args = ( Integer, Integer, Integer ), ( Symbol, )
+	args = ( Integer, Integer, Integer ), ( Text, )
 	grammar = [ K( "Convolution" ), K( "C" ) ], params( *args )
-	def make( self_, model, **kwArgs ):
-		model.add( Convolution2D( self_.values[0], ( self_.values[1], self_.values[2] ), activation='relu', **kwArgs ) )
+	def make( self_, model, **kwArgs_ ):
+		kwArgs = {}
+		kwArgs.update( kwArgs_ )
+		if hasattr( self_, "kwArgs" ):
+			kwArgs.update( self_.kwArgs )
+		model.add( Convolution2D( self_.values[0], ( self_.values[1], self_.values[2] ), **kwArgs ) )
 
 class DropoutParser:
 	args = ( Float, ),
@@ -103,10 +117,10 @@ class FlattenParser:
 		model.add( Flatten( **kwArgs ) )
 
 class DenseParser:
-	args = ( Integer, ), ( Symbol, )
+	args = ( Integer, ), ( Text, )
 	grammar = [ K( "Dense" ), K( "N" ) ], params( *args )
 	def make( self_, model, **kwArgs ):
-		model.add( Dense( self_.values[0], activation='relu', **kwArgs ) )
+		model.add( Dense( self_.values[0], **kwArgs ) )
 
 class SoftmaxParser:
 	args = None
