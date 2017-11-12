@@ -2,6 +2,7 @@
 
 import numpy as np
 from pypeg2 import *
+import functools
 
 from math import sqrt
 from keras.models import Sequential
@@ -42,49 +43,90 @@ class Float( Symbol ):
 class Integer( Symbol ):
 	regex = re.compile( "\\d+" )
 
-params = "(", attr( "values", csl( [ Float, Integer ] ) ), ")"
+def params( required_, optional_ = () ):
+	typeRule = ( required_[0], )
+	for t in required_[1:]:
+		typeRule = *typeRule, ",", t
+	for t in optional_:
+		typeRule = *typeRule, optional( ( ",", t ) )
+	return "(", attr( "values", typeRule ), ")"
+
+def coerce( layer ):
+	if type( layer.args ) == tuple:
+		d = functools.reduce( ( lambda x,y: x + y ), layer.args )
+		if type( layer.values ) == list:
+			for i in range( len( layer.values ) ):
+				if d[i] == Integer:
+					layer.values[i] = int( layer.values[i] )
+				elif d[i] == Float:
+					layer.values[i] = float( layer.values[i] )
+				else:
+					layer.values[i] = str( layer.values[i] )
+		else:
+			if d[0] == Integer:
+				layer.values = int( layer.values )
+			elif d[0] == Float:
+				layer.values = float( layer.values )
+			else:
+				layer.values = str( layer.values )
+	else:
+		if layer.args == Integer:
+			layer.value = int( layer )
+		elif layer.args == Float:
+			layer.value = float( layer )
+		else:
+			layer.value = layer.__class__.__name__
+	return layer
 
 class ConvolutionParser:
-	grammar = [ K( "Convolution" ), K( "C" ) ], params
+	args = ( Integer, Integer, Integer ), ( Symbol, )
+	grammar = [ K( "Convolution" ), K( "C" ) ], params( *args )
 	def make( self_, model, **kwArgs ):
-		model.add( Convolution2D( int( self_.values[0] ), ( int( self_.values[1] ), int( self_.values[2] ) ), activation='relu', **kwArgs ) )
+		model.add( Convolution2D( self_.values[0], ( self_.values[1], self_.values[2] ), activation='relu', **kwArgs ) )
 
 class DropoutParser:
-	grammar = [ K( "Dropout" ), K( "D" ) ], params
+	args = ( Float, ),
+	grammar = [ K( "Dropout" ), K( "D" ) ], params( *args )
 	def make( self_, model, **kwArgs ):
-		model.add( Dropout( float( self_.values[0] ), **kwArgs ) )
+		model.add( Dropout( float( self_.values ), **kwArgs ) )
 
 class MaxPoolingParser:
-	grammar = [ K( "MaxPooling" ), K( "MP" ) ], params
+	args = ( Integer, Integer ),
+	grammar = [ K( "MaxPooling" ), K( "MP" ) ], params( *args )
 	def make( self_, model, **kwArgs ):
-		model.add( MaxPooling2D( pool_size = ( int( self_.values[0] ), int( self_.values[1] ) ), **kwArgs ) )
+		model.add( MaxPooling2D( pool_size = ( self_.values[0], self_.values[1] ), **kwArgs ) )
 
 class FlattenParser:
+	args = None
 	grammar = [ K( "Flatten" ), K( "F" ) ]
 	def make( self_, model, **kwArgs ):
 		model.add( Flatten( **kwArgs ) )
 
-class SoftmaxParser:
-	grammar = [ K( "Softmax" ), K( "S" ) ]
+class DenseParser:
+	args = ( Integer, ), ( Symbol, )
+	grammar = [ K( "Dense" ), K( "N" ) ], params( *args )
+	def make( self_, model, **kwArgs ):
+		model.add( Dense( self_.values[0], activation='relu', **kwArgs ) )
 
-class DenseParser( Integer ):
-	pass
+class SoftmaxParser:
+	args = None
+	grammar = [ K( "Softmax" ), K( "S" ) ]
 
 class TopologyParser( List ):
 	grammar = optional( csl( [
 		ConvolutionParser,
-		DropoutParser,
-		MaxPoolingParser,
 		DenseParser,
 		FlattenParser,
-		SoftmaxParser
+		SoftmaxParser,
+		DropoutParser,
+		MaxPoolingParser
 	] ) )
 
 class KerasSolver:
 	def __prepare_model( shaper, **kwArgs ):
 		sampleSize = int( sqrt( shaper.feature_count() ) )
 		topology = kwArgs.get( "nnTopology", [] )
-		topology = parse( topology, TopologyParser )
+		topology = list( map( coerce, parse( topology, TopologyParser ) ) )
 		model = Sequential()
 		first = True
 		for l in topology:
@@ -93,8 +135,6 @@ class KerasSolver:
 				first = False
 			else:
 				l.make( model )
-		model.add(Dense(128, activation='relu'))
-		model.add(Dropout(0.5))
 		model.add( Dense( shaper.class_count(), activation = 'softmax' ) )
 		model.compile( loss = 'categorical_crossentropy',
 			optimizer = 'adam',
