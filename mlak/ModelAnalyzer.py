@@ -61,19 +61,19 @@ class DataShaper:
 
 class Solution:
 	def __init__( self_, **kwArgs ):
-		self_._theta = kwArgs.get( "theta", 0 )
+		self_._model = kwArgs.get( "model", 0 )
 		self_._shaper =  kwArgs.get( "shaper", None )
 	def set( self_, **kwArgs ):
-		if "theta" in kwArgs:
-			self_._theta = kwArgs.get( "theta" )
+		if "model" in kwArgs:
+			self_._model = kwArgs.get( "model" )
 		if "shaper" in kwArgs:
 			self_._mu = kwArgs.get( "shaper" )
-	def theta( self_ ):
-		return self_._theta
+	def model( self_ ):
+		return self_._model
 	def shaper( self_ ):
 		return self_._shaper
 	def __repr__( self_ ):
-		return "Solution( theta = {}, shaper = {} )".format( self_._theta, self_._shaper )
+		return "Solution( model = {}, shaper = {} )".format( self_._model, self_._shaper )
 
 # Split data to train set, cross validation set and test set.
 # *Fraction tells how much of the data shall go into given set.
@@ -113,12 +113,18 @@ def find_solution( solver, X, y, **kwArgs ):
 			values.append( v )
 		print( "{}: {}".format( k, v ) )
 
+	profiles = list( product( *values ) )
+
+	profileCount = len( profiles )
+	if profileCount == 1:
+		kwArgs["testFraction"] = 0
+
 	dataSet = split_data( X, y, **kwArgs )
 
 	failureRate = math.inf
 	solution = None
 	optimizationParam = None
-	for p in product( *values ):
+	for p in profiles:
 		op = {}
 		for i in range( len( names ) ):
 			op[names[i]] = p[i]
@@ -135,5 +141,8 @@ def find_solution( solver, X, y, **kwArgs ):
 			optimizationParam = op
 		print( "failureRateCV = {}           ".format( fr ) )
 	print( ">>> ... solution found." )
-	return OptimizationResult( solution, optimizationParam, solver.verify( solution, dataSet.testSet.X, dataSet.testSet.y ) )
+	return OptimizationResult(
+		solution, optimizationParam,
+		solver.verify( solution, dataSet.testSet.X, dataSet.testSet.y ) if profileCount != 1 else failureRate
+	)
 

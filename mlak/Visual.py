@@ -17,7 +17,7 @@ class DrawingPad:
 		self_._imgTk = None
 		self_._solver = kwArgs.get( "solver", None )
 		self_._solution = kwArgs.get( "solution", None )
-		self_._size = kwArgs.get( "size", int( sqrt( self_._solution.theta()[0][0] ) ) if self_._solution else None )
+		self_._size = kwArgs.get( "size", int( sqrt( self_._solution.shaper().feature_count() ) ) if self_._solution else None )
 		self_._labels = kwArgs.get( "labels", None )
 		self_._repeat = kwArgs.get( "repeat", 0 )
 		self_._i = 0

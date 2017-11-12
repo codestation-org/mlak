@@ -101,6 +101,7 @@ def predict_one_vs_all( X, topoTheta ):
 class NeuralNetworkSolver:
 	def __initial_theta( shaper, **kwArgs ):
 		topology = kwArgs.get( "nnTopology", [] )
+		topology = list( map( int, topology ) )
 		topology = [shaper.feature_count()] + topology + [shaper.class_count()]
 		s = 0
 		for i in range( 1, len( topology ) ):
@@ -123,17 +124,17 @@ class NeuralNetworkSolver:
 			maxiter = iters,
 			disp = False
 		)
-		return ma.Solution( theta = ( topology, theta ), shaper = shaper )
+		return ma.Solution( model = ( topology, theta ), shaper = shaper )
 
 	def verify( self_, solution, X, y ):
 		X = solution.shaper().conform( X, addOnes = False )
-		yp = predict_one_vs_all( X, solution.theta() )
+		yp = predict_one_vs_all( X, solution.model() )
 		accuracy = np.mean( 1.0 * ( y.flatten() == solution.shaper().labels( yp ) ) )
 		return 1 - accuracy
 
 	def predict( self_, solution, X ):
 		X = solution.shaper().conform( X, addOnes = False )
-		yp = predict_one_vs_all( X, solution.theta() )
+		yp = predict_one_vs_all( X, solution.model() )
 		return solution.shaper().labels( yp )
 
 
