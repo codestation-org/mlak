@@ -155,7 +155,7 @@ class ModelTester:
 		self.trainKwArgs = trainKwArgs
 
 	def getIterationsLearningCurve(self, steps=10):
-		ds = ma.split_data(self.X, self.y, testFraction = 0.3)
+		ds = ma.split_data(self.X, self.y, cvFraction = 0, testFraction = 0.3)
 		X_tr = ds.trainSet.X
 		y_tr = ds.trainSet.y
 		X_tt = ds.testSet.X
@@ -193,7 +193,7 @@ class ModelTester:
 				running_X <== TUTAJ WYBRANE X
 				running_y <== TUTAJ WYBRANE y
 
-				ds = ma.split_data(running_X, running_y, testFraction = 0.3)
+				ds = ma.split_data(running_X, running_y, cvFraction = 0, testFraction = 0.3)
 				X_tr = ds.trainSet.X
 				y_tr = ds.trainSet.y
 				X_tt = ds.testSet.X
