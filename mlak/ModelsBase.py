@@ -223,6 +223,8 @@ class MultiModelTester:
 """
 1. Analiza czy jest overfitting (to zawsze)
 2. Analiza krzywej uczenia dla konkretnego modelu (co daje zwiększanie iteracji)
+3. Analiza krzywej uczenia dla konkretnego modelu (co daje zwiększanie zbioru treningowego)
+3. Analiza krzywej uczenia dla konkretnego modelu (co daje zwiększanie batch size)
 3. Analiza przy jednej warstwie ukrytej, co daje zwiększanie jej rozmiaru
 4. Analiza co daje wielkość regularyzacji (jedna warstwa ukryta, kernel_regularizer)
 5. 
