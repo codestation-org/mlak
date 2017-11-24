@@ -97,7 +97,7 @@ def show( args ):
 def live( args ):
 	solver = preferredEngine()
 	solution = dio.load( args.solution )
-	lifeDemo = visual.DrawingPad( solver = solver, solution = solution )
+	lifeDemo = visual.DrawingPad( solver = solver, solution = solution, speech = args.speech )
 	lifeDemo.run()
 
 def main():
@@ -150,9 +150,11 @@ def main():
 		action = "store",
 		help = "Choose machine learning engine."
 	)
+	parser.add_argument( "-s", "--speech", help = "Provide voice feedback for predictions.", action = 'store_true' )
 	parser.add_argument( "-v", "--verbose", help = "Increase program verbosity level.", action = 'store_true' )
 	parser.add_argument( "-D", "--debug", help = "Print all debuging information.", action = 'store_true' )
 	parser.set_defaults( engine = "keras" )
+	parser.set_defaults( speech = False )
 	parser.set_defaults( verbose = False )
 	parser.set_defaults( debug = False )
 	parser.set_defaults( func = lambda x : parser.print_help() )

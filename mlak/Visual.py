@@ -10,6 +10,11 @@ class DrawingPad:
 	imgSize = 480
 	width = 40
 	def __init__( self_, **kwArgs ):
+		speech = kwArgs.get( "speech", False )
+		if speech:
+			import pyttsx3
+			self_._speechEngine = pyttsx3.init()
+			self_._speechEngine.setProperty('rate', 160)
 		self_._b1 = "up"
 		self_._xold = None
 		self_._yold = None
@@ -76,7 +81,11 @@ class DrawingPad:
 
 	def predict( self_ ):
 		d = self_.get_drawing()
-		term.plot( d, art = True, label = "{}".format( self_._solver.predict( self_._solution, np.array( [ d ] ) )[0] ) )
+		prediction = self_._solver.predict( self_._solution, np.array( [ d ] ) )[0]
+		if hasattr( self_, "_speechEngine" ):
+			self_._speechEngine.say( str( prediction ) )
+			self_._speechEngine.runAndWait()
+		term.plot( d, art = True, label = "{}".format( prediction ) )
 
 	def make_sample( self_ ):
 		d = self_.get_drawing()
