@@ -60,12 +60,12 @@ class LinearRegressionSolver:
 
 		theta = oa.gradient_descent_fminCG( X, y, theta, iters, Lambda, disp = False )
 
-		return ma.Solution( theta = theta, shaper = shaper )
+		return ma.Solution( model = theta, shaper = shaper )
 
 	def verify( self_, solution, X, y ):
 		X = solution.shaper().conform( X )
-		return compute_cost( X, y, solution.theta(), 0 )
+		return compute_cost( X, y, solution.model(), 0 )
 
 	def predict( self_, solution, X ):
 		X = solution.shaper().conform( X )
-		return np.dot( X, solution.theta() )
+		return np.dot( X, solution.model() )

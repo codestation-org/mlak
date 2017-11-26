@@ -141,8 +141,8 @@ class TopologyParser( List ):
 class KerasSolver:
 	def __prepare_model( shaper, **kwArgs ):
 		sampleSize = int( sqrt( shaper.feature_count() ) )
-		topology = kwArgs.get( "nnTopology", [] )
-		topology = list( map( coerce, parse( topology, TopologyParser ) ) )
+		topology = kwArgs.get( "nnTopology", None )
+		topology = list( map( coerce, parse( topology, TopologyParser ) ) ) if topology else []
 		model = Sequential()
 		first = True
 		for l in topology:

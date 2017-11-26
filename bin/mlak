@@ -7,8 +7,9 @@ import traceback
 import argparse
 import numpy as np
 
+import LinearRegression as linReg
+import LogisticRegression as logReg
 import NeuralNetwork as nn
-import KerasSolver as ks
 import ModelAnalyzer as ma
 
 import DataIO as dio
@@ -19,10 +20,17 @@ preferredEngine = None
 def set_preferred_engine( engine ):
 	global preferredEngine
 	if engine == "keras":
+		import KerasSolver as ks
 		preferredEngine = ks.KerasSolver
 		ks.make_keras_picklable()
-	else:
+	elif engine == "linreg":
+		preferredEngine = linReg.LinearRegressionSolver
+	elif engine == "logreg":
+		preferredEngine = logReg.LogisticRegressionSolver
+	elif engine == "struggle":
 		preferredEngine = nn.NeuralNetworkSolver
+	else:
+		raise Exception( "Bad engine!" )
 	return engine
 
 def predict( solver, solution, X, y, n ):
@@ -64,9 +72,10 @@ def train( args ):
 	dio.save( args.solution, solution )
 	if args.debug:
 		print( "solution = {}".format( solution ) )
-	for i in range( len( y_orig ) ):
-		if not predict( solver, solution, X_orig, y_orig, i ):
-			return
+	if solution.shaper()._classes is not None:
+		for i in range( len( y_orig ) ):
+			if not predict( solver, solution, X_orig, y_orig, i ):
+				return
 
 def test( args ):
 	solver = preferredEngine()
@@ -123,7 +132,7 @@ def main():
 	parserTrain = subparsers.add_parser( "train", help = "Train given model on given data." )
 	parserTrain.add_argument( "-d", "--data-set", metavar = "path", type = str, required = True, help = "Dataset for training." )
 	parserTrain.add_argument( "-s", "--solution", metavar = "path", type = str, required = True, help = "Store solution path." )
-	parserTrain.add_argument( "-t", "--topology", metavar = "topo", type = str, required = True, action = "append", help = "NeuralNetwork topologies to test." )
+	parserTrain.add_argument( "-t", "--topology", metavar = "topo", type = str, action = "append", help = "NeuralNetwork topologies to test." )
 	parserTrain.add_argument( "-l", "--Lambda", metavar = "lambda", type = str, required = True, help = "Values of regularization parameter to test." )
 	parserTrain.add_argument( "-i", "--iterations", metavar = "num", type = int, help = "Maximum number of iterations." )
 	parserTrain.set_defaults( iterations = 50 )
@@ -145,8 +154,9 @@ def main():
 	parserLive.add_argument( "-s", "--solution", metavar = "path", type = str, required = True, help = "Solution to use for live test." )
 	parserLive.set_defaults( func = live )
 
+
 	parser.add_argument(
-		"-e", "--engine", metavar = "name", choices = [ "struggle", "keras" ], type = set_preferred_engine,
+		"-e", "--engine", metavar = "name", choices = [ "struggle", "keras", "linreg", "logreg" ], type = set_preferred_engine,
 		action = "store",
 		help = "Choose machine learning engine."
 	)

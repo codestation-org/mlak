@@ -57,16 +57,16 @@ class LogisticRegressionSolver:
 				maxiter = iters,
 				disp = False
 			)
-		return ma.Solution( theta = theta, shaper = shaper )
+		return ma.Solution( model = theta, shaper = shaper )
 
 	def verify( self_, solution, X, y ):
 		X = solution.shaper().conform( X )
-		yp = predict_one_vs_all( X, solution.theta() )
+		yp = predict_one_vs_all( X, solution.model() )
 		accuracy = np.mean( 1.0 * ( y.flatten() == solution.shaper().labels( yp ) ) )
 		return 1 - accuracy
 
 	def predict( self_, solution, X ):
 		X = solution.shaper().conform( X )
-		yp = predict_one_vs_all( X, solution.theta() )
+		yp = predict_one_vs_all( X, solution.model() )
 		return solution.shaper().labels( yp )
 
