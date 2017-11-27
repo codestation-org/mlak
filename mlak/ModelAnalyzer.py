@@ -13,7 +13,9 @@ from Logger import Logger
 Observations = namedtuple( "Observations", "X y" )
 DataSet = namedtuple( "DataSet", "trainSet crossValidationSet testSet" )
 OptimizationResult = namedtuple( "OptimizationResult", "solution parameters failureRateTest" )
-AnalyzerResult = namedtuple( "AnalyzerResult", "sampleCount errorTrain errorCV" )
+SampleCountAnalyzis = namedtuple( "SampleCountAnalyzis", "sampleCount errorTrain errorCV" )
+IterationCountAnalyzis = namedtuple( "IterationCountAnalyzis", "iterationCount errorTrain errorCV" )
+AnalyzerResult = namedtuple( "AnalyzerResult", "sampleCountAnalyzis iterationCountAnalyzis" )
 
 class DataShaper:
 	def __init__( self_, X, y, **kwArgs ):
@@ -175,16 +177,19 @@ def analyze( solver, X, y, **kwArgs ):
 	step = kwArgs.pop( "step", None )
 	if step is None:
 		step = 1.5
+	sampleIterations = kwArgs.pop( "sample_iterations", None )
+	if sampleIterations is None:
+		sampleIterations = 50
 	optimizationParams.update( kwArgs )
+	iterations = optimizationParams.pop( "iterations", 50 )
 
 	dataSet = split_data( X, y, testFraction = 0 )
 
 	m = len( dataSet.trainSet.y )
 
-
 	if verbose:
 		steps = int( math.floor( math.log( m, step ) ) ) if step > 1 else m - 1
-		p = term.Progress( steps, "Analyzing model: " )
+		p = term.Progress( steps, "Analyzing model (sample count): " )
 
 	i = 0
 	count = 1
@@ -200,7 +205,7 @@ def analyze( solver, X, y, **kwArgs ):
 			perm = np.random.permutation( m )[:c]
 			Xt = dataSet.trainSet.X[perm]
 			yt = dataSet.trainSet.y[perm]
-			s = solver.train( Xt, yt, **optimizationParams )
+			s = solver.train( Xt, yt, iterations = sampleIterations, **optimizationParams )
 			errorTrain[i] += solver.verify( s, Xt, yt )
 			errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
 		if verbose:
@@ -210,9 +215,46 @@ def analyze( solver, X, y, **kwArgs ):
 			count *= step
 		else:
 			count += 1
+
 	errorTrain = np.array( errorTrain )
 	errorCV = np.array( errorCV )
 	errorTrain /= tries
 	errorCV /= tries
-	return AnalyzerResult( sampleCount = sampleCount, errorTrain = errorTrain, errorCV = errorCV )
+
+	sampleCountAnalyzis = SampleCountAnalyzis( sampleCount = sampleCount, errorTrain = errorTrain, errorCV = errorCV )
+
+	if verbose:
+		steps = int( math.floor( math.log( m, step ) ) ) if step > 1 else m - 1
+		p = term.Progress( steps, "Analyzing model (iteration count): " )
+
+	i = 0
+	count = 1
+	iterationCount = []
+	errorTrain = []
+	errorCV = []
+	while count < iterations:
+		c = int( count )
+		iterationCount.append( c )
+		errorTrain.append( 0 )
+		errorCV.append( 0 )
+		for k in range( tries ):
+			s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, iterations = c, **optimizationParams )
+			errorTrain[i] += solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
+			errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
+		if verbose:
+			next( p )
+		i += 1
+		if step > 1:
+			count *= step
+		else:
+			count += 1
+
+	errorTrain = np.array( errorTrain )
+	errorCV = np.array( errorCV )
+	errorTrain /= tries
+	errorCV /= tries
+
+	iterationCountAnalyzis = IterationCountAnalyzis( iterationCount = iterationCount, errorTrain = errorTrain, errorCV = errorCV )
+
+	return AnalyzerResult( sampleCountAnalyzis = sampleCountAnalyzis, iterationCountAnalyzis = iterationCountAnalyzis )
 

@@ -99,12 +99,26 @@ def analyze( args ):
 		files = [ args.data_set ],
 		**vars( args )
 	)
-	plt.title( "data: {}\nlambda: {}\n".format( args.data_set, args.Lambda ), loc = "left" )
+	fig = plt.figure( 1 )
+	plt.subplot( 211 )
+	plt.title( "data: {}\nlambda: {}\n\n".format( args.data_set, args.Lambda ), loc = "left" )
+	plt.title( "Sample count test\n" )
 	plt.xlabel( "Sample count" )
 	plt.ylabel( "Error rate" )
-	plt.plot( analyzerResults.sampleCount, analyzerResults.errorTrain, 'b-', label = "train" )
-	plt.plot( analyzerResults.sampleCount, analyzerResults.errorCV, 'g-', label = "CV" )
+	plt.plot( analyzerResults.sampleCountAnalyzis.sampleCount, analyzerResults.sampleCountAnalyzis.errorTrain, 'b-', label = "train" )
+	plt.plot( analyzerResults.sampleCountAnalyzis.sampleCount, analyzerResults.sampleCountAnalyzis.errorCV, 'g-', label = "CV" )
 	plt.legend()
+	plt.subplot( 212 )
+	plt.title( "Iteration count test" )
+	plt.xlabel( "Iteration count" )
+	plt.ylabel( "Error rate" )
+	plt.plot( analyzerResults.iterationCountAnalyzis.iterationCount, analyzerResults.iterationCountAnalyzis.errorTrain, 'b-', label = "train" )
+	plt.plot( analyzerResults.iterationCountAnalyzis.iterationCount, analyzerResults.iterationCountAnalyzis.errorCV, 'g-', label = "CV" )
+	plt.legend()
+	def on_resize( event ):
+		plt.tight_layout()
+		plt.subplots_adjust( right = 0.95 )
+	cid = fig.canvas.mpl_connect( "resize_event", on_resize )
 	plt.show()
 
 def test( args ):
@@ -182,6 +196,8 @@ def main():
 	parserAnalyze.add_argument( "-l", "--Lambda", metavar = "lambda", type = float, required = True, help = "Value of regularization parameter to test." )
 	parserAnalyze.add_argument( "-r", "--tries", metavar = "count", type = int, help = "Average out experiment results over that many retries." )
 	parserAnalyze.add_argument( "-S", "--step", metavar = "factor", type = float, help = "Sample count increment factor." )
+	parserAnalyze.add_argument( "-I", "--sample-iterations", metavar = "num", type = int, help = "Number of iterations in sample count trial." )
+	parserAnalyze.add_argument( "-i", "--iterations", metavar = "num", type = int, help = "Maximum number of iterations." )
 	parserAnalyze.set_defaults( func = analyze )
 
 	parserTest = subparsers.add_parser( "test", help = "Test trained model against given data." )
