@@ -101,15 +101,18 @@ def predict_one_vs_all( X, topoTheta ):
 
 class NeuralNetworkSolver:
 	def __initial_theta( shaper, **kwArgs ):
-		topology = kwArgs.get( "nnTopology", None )
-		topology = list( map( int, topology.split( "," ) ) ) if topology else []
-		topology = [shaper.feature_count()] + topology + [shaper.class_count()]
-		s = 0
-		for i in range( 1, len( topology ) ):
-			s += topology[i] * ( topology[i - 1] + 1 )
-		theta = np.zeros( s )
-		randomize_weights( topology, theta )
-		return topology, theta
+		model = kwArgs.get( "model", None )
+		if model is None:
+			topology = kwArgs.get( "nnTopology", None )
+			topology = list( map( int, topology.split( "," ) ) ) if topology else []
+			topology = [shaper.feature_count()] + topology + [shaper.class_count()]
+			s = 0
+			for i in range( 1, len( topology ) ):
+				s += topology[i] * ( topology[i - 1] + 1 )
+			theta = np.zeros( s )
+			randomize_weights( topology, theta )
+			return topology, theta
+		return model[0], model[1]
 
 	def train( self_, X, y, **kwArgs ):
 		shaper = ma.DataShaper( X, y, **kwArgs )

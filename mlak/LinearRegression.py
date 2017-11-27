@@ -47,14 +47,15 @@ def compute_grad_fminCG( theta, *args ):
 	return compute_grad( args[0], args[1], theta, args[2] ).flatten()
 
 class LinearRegressionSolver:
-	def __initial_theta( shaper ):
-		return  np.zeros( shaper.feature_count() + 1 )
+	def __initial_theta( shaper, **kwArgs ):
+		model = kwArgs.get( "model", None )
+		return model if model is not None else np.zeros( shaper.feature_count() + 1 )
 
 	def train( self_, X, y, **kwArgs ):
 		iterations = kwArgs.get( "iterations", 50 )
 		Lambda = kwArgs.get( "Lambda", 0 )
 		shaper = mo.DataShaper( X, y, **kwArgs )
-		theta = kwArgs.get( "theta", LinearRegressionSolver.__initial_theta( shaper ) )
+		theta = kwArgs.get( "theta", LinearRegressionSolver.__initial_theta( shaper, **kwArgs ) )
 
 		X = shaper.conform( X )
 
