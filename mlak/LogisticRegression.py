@@ -8,7 +8,6 @@ import scipy.optimize as optimize
 def compute_cost( theta, *args ):
 	X, y, Lambda = args
 	theta = deepcopy( theta )
-	la.columnize( theta )
 
 	hr = mt.sigmoid_v( np.dot( X, theta ) )
 
@@ -28,7 +27,6 @@ def compute_grad( theta, *args ):
 	theta[ 0 ] = 0
 	m = len( y )
 	grad = ( np.dot( X.T, ( hr - y ) ) + theta * Lambda ) / m
-#	print( "grad = {}".format( grad.flatten() ) )
 	return grad.flatten()
 
 def predict( X, theta ):
@@ -44,7 +42,7 @@ class LogisticRegressionSolver:
 
 	def train( self_, X, y, **kwArgs ):
 		shaper = ma.DataShaper( X, y, **kwArgs )
-		iters = kwArgs.get( "iters", 50 )
+		iterations = kwArgs.get( "iterations", 50 )
 		Lambda = kwArgs.get( "Lambda", 0 )
 		y = shaper.map_labels( y )
 		theta = kwArgs.get( "theta", LogisticRegressionSolver.__initial_theta( shaper ) )
@@ -54,7 +52,7 @@ class LogisticRegressionSolver:
 				compute_cost,
 				theta[c], fprime = compute_grad,
 				args = ( X, ( y == c ), Lambda ),
-				maxiter = iters,
+				maxiter = iterations,
 				disp = False
 			)
 		return ma.Solution( model = theta, shaper = shaper )

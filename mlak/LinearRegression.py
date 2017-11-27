@@ -51,14 +51,14 @@ class LinearRegressionSolver:
 		return  np.zeros( shaper.feature_count() + 1 )
 
 	def train( self_, X, y, **kwArgs ):
-		iters = kwArgs.get( "iters", 50 )
+		iterations = kwArgs.get( "iterations", 50 )
 		Lambda = kwArgs.get( "Lambda", 0 )
 		shaper = mo.DataShaper( X, y, **kwArgs )
 		theta = kwArgs.get( "theta", LinearRegressionSolver.__initial_theta( shaper ) )
 
 		X = shaper.conform( X )
 
-		theta = oa.gradient_descent_fminCG( X, y, theta, iters, Lambda, disp = False )
+		theta = oa.gradient_descent_fminCG( X, y, theta, iterations, Lambda, disp = False )
 
 		return ma.Solution( model = theta, shaper = shaper )
 

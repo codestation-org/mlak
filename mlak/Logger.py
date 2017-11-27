@@ -35,9 +35,9 @@ class Logger:
 
 		if split:
 			log_file_name = Logger.get_unique_log_filename() + '.' + log_file_ext
-			
+
 		log_full_path = log_dir + log_file_name
-		
+
 		json = Logger.get_json(data, files) + '\n'
 
 		if split:
@@ -47,7 +47,7 @@ class Logger:
 
 
 	def get_json(data, files):
-		gitcurrenthash, gitchanges = get_git_hash_and_changes()	
+		gitcurrenthash, gitchanges = get_git_hash_and_changes()
 		jsonContent = OrderedDict([
 			('date', get_current_datetime()),
 			('git', OrderedDict([

@@ -51,7 +51,8 @@ def compute_cost( theta, *args ):
 		r += np.sum( t[:,1:] ** 2 )
 	cost /= m
 	cost += Lambda * r / ( m * 2 )
-	print( "cost = {}                                \r".format( cost ), end = "" )
+	if "debug" in args:
+		print( "cost = {}                                \r".format( cost ), end = "" )
 	return cost
 
 def activation_derivative( a ):
@@ -112,7 +113,7 @@ class NeuralNetworkSolver:
 
 	def train( self_, X, y, **kwArgs ):
 		shaper = ma.DataShaper( X, y, **kwArgs )
-		iters = kwArgs.get( "iters", 50 )
+		iterations = kwArgs.get( "iterations", 50 )
 		Lambda = kwArgs.get( "Lambda", 0 )
 		y = shaper.map_labels( y )
 		topology, theta = kwArgs.get( "theta", NeuralNetworkSolver.__initial_theta( shaper, **kwArgs ) )
@@ -121,7 +122,7 @@ class NeuralNetworkSolver:
 			compute_cost,
 			theta, fprime = compute_grad,
 			args = ( X, y, topology, shaper.class_count(), Lambda ),
-			maxiter = iters,
+			maxiter = iterations,
 			disp = False
 		)
 		return ma.Solution( model = ( topology, theta ), shaper = shaper )

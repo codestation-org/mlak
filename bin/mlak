@@ -7,6 +7,9 @@ import traceback
 import argparse
 import numpy as np
 
+import matplotlib.pyplot as plt
+import matplotlib
+
 import LinearRegression as linReg
 import LogisticRegression as logReg
 import NeuralNetwork as nn
@@ -55,10 +58,10 @@ def train( args ):
 	rawData = dio.load( args.data_set )
 	X_orig = rawData["X"]
 	y_orig = rawData["y"]
+	args.engine = solver.__class__.__name__
 	optimizationResults = ma.find_solution(
 		solver, X_orig, y_orig,
 		showFailureRateTrain = True,
-		iters = args.iterations,
 		optimizationParams = {
 			"nnTopology": topology,
 			"Lambda": Lambda,
@@ -66,7 +69,8 @@ def train( args ):
 			]
 		},
 		files = [ args.data_set ],
-		engine = solver.__class__.__name__
+		logFileName = "mlak.log",
+		**vars( args )
 	)
 	solution = optimizationResults.solution
 	dio.save( args.solution, solution )
@@ -76,6 +80,32 @@ def train( args ):
 		for i in range( len( y_orig ) ):
 			if not predict( solver, solution, X_orig, y_orig, i ):
 				return
+
+def analyze( args ):
+	solver = preferredEngine()
+	rawData = dio.load( args.data_set )
+	X_orig = rawData["X"]
+	y_orig = rawData["y"]
+	args.engine = solver.__class__.__name__
+	analyzerResults = ma.analyze(
+		solver, X_orig, y_orig,
+		optimizationParams = {
+			"nnTopology": args.topology,
+			"Lambda": args.Lambda,
+			"functions": [
+			]
+		},
+		files = [ args.data_set ],
+		**vars( args )
+	)
+	plt.title( "data: {}\nlambda: {}\n".format( args.data_set, args.Lambda ), loc = "left" )
+	plt.xlabel( "Sample count" )
+	plt.ylabel( "Error rate" )
+	plt.gca().yaxis.set_minor_formatter( matplotlib.ticker.NullFormatter() )
+	plt.plot( analyzerResults.sampleCount, analyzerResults.errorTrain, 'b-', label = "train" )
+	plt.plot( analyzerResults.sampleCount, analyzerResults.errorCV, 'g-', label = "CV" )
+	plt.legend()
+	plt.show()
 
 def test( args ):
 	solver = preferredEngine()
@@ -113,9 +143,10 @@ def main():
 	parser = argparse.ArgumentParser(
 		description = "Machine Learning Army Knife - an experimentation tool\n\n"
 		"Example invocations:\n"
-		"  {0} create -c classA,classB,classC -n 30 -d train_data_ABC.p\n"
+		"  {0} create -c classA,classB,classC -n 30 -r 28 -d train_data_ABC.p\n"
 		"  {0} train -d train_data.p -s solution_ABC.p -i 100 -t 40,25 -l 1,3,10\n"
 		"  {0} test -d train_data.p -s solution_ABC.p\n"
+		"  {0} analyze -d train_data.p -r 10 -s 1.5 -l 0.1\n"
 		"  {0} show -d train_data.p -z 3 -s solution_ABC.p\n"
 		"  {0} live -s solution_ABC.p".format( sys.argv[0] ),
 		formatter_class = argparse.RawTextHelpFormatter
@@ -137,6 +168,14 @@ def main():
 	parserTrain.add_argument( "-i", "--iterations", metavar = "num", type = int, help = "Maximum number of iterations." )
 	parserTrain.set_defaults( iterations = 50 )
 	parserTrain.set_defaults( func = train )
+
+	parserAnalyze = subparsers.add_parser( "analyze", help = "Analyze given model architecture." )
+	parserAnalyze.add_argument( "-d", "--data-set", metavar = "path", type = str, required = True, help = "Dataset for training." )
+	parserAnalyze.add_argument( "-t", "--topology", metavar = "topo", type = str, help = "NeuralNetwork topology to test." )
+	parserAnalyze.add_argument( "-l", "--Lambda", metavar = "lambda", type = float, required = True, help = "Value of regularization parameter to test." )
+	parserAnalyze.add_argument( "-r", "--tries", metavar = "count", type = int, help = "Average out experiment results over that many retries." )
+	parserAnalyze.add_argument( "-S", "--step", metavar = "factor", type = float, help = "Sample count increment factor." )
+	parserAnalyze.set_defaults( func = analyze )
 
 	parserTest = subparsers.add_parser( "test", help = "Test trained model against given data." )
 	parserTest.add_argument( "-d", "--data-set", metavar = "path", type = str, required = True, help = "Dataset to test a model against." )

@@ -1,16 +1,19 @@
 import numpy as np
+import math
+from itertools import product
 from collections import namedtuple
+import inspect
+
 import OptimizationAlgorithms as oa
 import LinearAlgebra as la
 import FeatureTools as ft
-import inspect
-from itertools import product
-import math
+import Terminal as term
 from Logger import Logger
 
 Observations = namedtuple( "Observations", "X y" )
 DataSet = namedtuple( "DataSet", "trainSet crossValidationSet testSet" )
 OptimizationResult = namedtuple( "OptimizationResult", "solution parameters failureRateTest" )
+AnalyzerResult = namedtuple( "AnalyzerResult", "sampleCount errorTrain errorCV" )
 
 class DataShaper:
 	def __init__( self_, X, y, **kwArgs ):
@@ -102,10 +105,17 @@ def split_data( X, y, **kwArgs ):
 
 def find_solution( solver, X, y, **kwArgs ):
 	print( ">>> Looking for a solution..." )
-	showFailureRateTrain = kwArgs.get( "showFailureRateTrain", False )
-	optimizationParams = kwArgs.get( "optimizationParams", { "dummy" : [ 0 ] } )
+	showFailureRateTrain = kwArgs.pop( "showFailureRateTrain", False )
+	optimizationParams = kwArgs.pop( "optimizationParams", { "dummy" : [ 0 ] } )
+	logFileName = kwArgs.pop( "logFileName", "model-analyzer" )
+	verbose = kwArgs.pop( "verbose", False )
+	files = kwArgs.pop( "files", [] )
+	for ign in [ "speech", "debug", "func", "data_set", "solution" ]:
+		kwArgs.pop( ign, None )
+
 	names = []
 	values = []
+
 	for k, v in optimizationParams.items():
 		if type( v ) == list:
 			names.append( k )
@@ -127,23 +137,22 @@ def find_solution( solver, X, y, **kwArgs ):
 	optimizationParam = None
 	for p in profiles:
 		op = {}
+		op.update( kwArgs )
 		for i in range( len( names ) ):
 			op[names[i]] = p[i]
 		print( "testing solution for: {}   ".format( op ) )
-		op.update( kwArgs )
 		s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, **op )
 		if showFailureRateTrain:
 			fr = solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
 			print( "failureRateTrain = {}         ".format( fr ) )
 		fr = solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
-		op.pop( "optimizationParams" )
-		op.pop( "files" )
 		Logger.log(
 			data = {
 				"profile": op,
 				"failureRateCV": fr,
 			},
-			files = kwArgs.get( "files", [] )
+			files = files,
+			log_file_name = logFileName
 		)
 		if fr < failureRate:
 			failureRate = fr
@@ -155,4 +164,53 @@ def find_solution( solver, X, y, **kwArgs ):
 		solution, optimizationParam,
 		solver.verify( solution, dataSet.testSet.X, dataSet.testSet.y ) if profileCount != 1 else failureRate
 	)
+
+def analyze( solver, X, y, **kwArgs ):
+	print( ">>> Analyzing a model architecture..." )
+	optimizationParams = kwArgs.pop( "optimizationParams", { "dummy" : [ 0 ] } )
+	verbose = kwArgs.pop( "verbose", False )
+	tries = kwArgs.pop( "tries", None )
+	if tries is None:
+		tries = 10
+	step = kwArgs.pop( "step", None )
+	if step is None:
+		step = 1.5
+	optimizationParams.update( kwArgs )
+
+	dataSet = split_data( X, y, testFraction = 0 )
+
+	m = len( dataSet.trainSet.y )
+
+	errorTrain = np.zeros( m )
+	errorCV = np.zeros( m )
+
+	if verbose:
+		steps = int( math.floor( math.log( m, step ) ) ) if step > 1 else m - 1
+		p = term.Progress( steps, "Analyzing model: " )
+
+	i = 0
+	count = 1
+	sampleCount = []
+	while count < m:
+		c = int( count )
+		sampleCount.append( c )
+		for k in range( tries ):
+			perm = np.random.permutation( m )[:c]
+			Xt = dataSet.trainSet.X[perm]
+			yt = dataSet.trainSet.y[perm]
+			s = solver.train( Xt, yt, **optimizationParams )
+			errorTrain[i] += solver.verify( s, Xt, yt )
+			errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
+		if verbose:
+			next( p )
+		i += 1
+		if step > 1:
+			count *= step
+		else:
+			count += 1
+	errorTrain = errorTrain[:i]
+	errorCV = errorCV[:i]
+	errorTrain /= tries
+	errorCV /= tries
+	return AnalyzerResult( sampleCount = sampleCount, errorTrain = errorTrain, errorCV = errorCV )
 

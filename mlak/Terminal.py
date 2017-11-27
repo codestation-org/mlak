@@ -70,7 +70,11 @@ def Progress( n, label = "" ):
 	for i in range( n ):
 		p = int( i * 10000 / n )
 		if p != op:
-			print( label + "{:6.2f}%".format( p / 100 ) + cll, end = "" )
+			print( "{}{:6.2f}%{}".format( label, p / 100, cll ), end = "" )
 			op = p
 		yield
-	print( "" )
+	print( "{}100%{}".format( label, cll ) )
+	yield
+	while True:
+		yield
+

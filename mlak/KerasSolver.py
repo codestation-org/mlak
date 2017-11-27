@@ -164,7 +164,7 @@ class KerasSolver:
 	def train( self_, X, y, **kwArgs ):
 		shaper = ma.DataShaper( X, y, **kwArgs )
 		sampleSize = int( sqrt( shaper.feature_count() ) )
-		iters = kwArgs.get( "iters", 50 )
+		iterations = kwArgs.get( "iterations", 20 )
 		Lambda = kwArgs.get( "Lambda", 0 )
 		y = shaper.map_labels( y )
 		y = keras.utils.to_categorical( y, num_classes = None )
@@ -172,7 +172,7 @@ class KerasSolver:
 		X = shaper.conform( X, addOnes = False )
 		X = X.reshape( X.shape[0], sampleSize, sampleSize, 1 )
 		X = X.astype('float32')
-		model.fit( X, y, batch_size = 64, epochs = 20, verbose = 1 )
+		model.fit( X, y, batch_size = 64, epochs = iterations, verbose = 1 )
 		return ma.Solution( model = model, shaper = shaper )
 
 	def verify( self_, solution, X, y ):
