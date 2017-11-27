@@ -141,14 +141,21 @@ def live( args ):
 
 def main():
 	parser = argparse.ArgumentParser(
-		description = "Machine Learning Army Knife - an experimentation tool\n\n"
-		"Example invocations:\n"
-		"  {0} create -c classA,classB,classC -n 30 -r 28 -d train_data_ABC.p\n"
-		"  {0} train -d train_data.p -s solution_ABC.p -i 100 -t 40,25 -l 1,3,10\n"
-		"  {0} test -d train_data.p -s solution_ABC.p\n"
-		"  {0} analyze -d train_data.p -r 10 -s 1.5 -l 0.1\n"
-		"  {0} show -d train_data.p -z 3 -s solution_ABC.p\n"
-		"  {0} live -s solution_ABC.p".format( sys.argv[0] ),
+		description = "Machine Learning Army Knife - an experimentation tool\n"
+			"\n"
+			"Valid engines are:\n"
+			"keras    - Keras based engine (default)\n"
+			"struggle - native Neural Network implementation with fully connected layers\n"
+			"logreg   - Logisic Regression\n"
+			"linreg   - Linear Regression\n"
+			"\n"
+			"Example invocations:\n"
+			"  {0} create -c classA,classB,classC -n 30 -r 28 -d train_data_ABC.p\n"
+			"  {0} train -d train_data.p -s solution_ABC.p -i 100 -t 40,25 -l 1,3,10\n"
+			"  {0} test -d train_data.p -s solution_ABC.p\n"
+			"  {0} analyze -d train_data.p -r 10 -s 1.5 -l 0.1\n"
+			"  {0} show -d train_data.p -z 3 -s solution_ABC.p\n"
+			"  {0} live -s solution_ABC.p".format( sys.argv[0] ),
 		formatter_class = argparse.RawTextHelpFormatter
 	)
 	subparsers = parser.add_subparsers()
