@@ -100,6 +100,7 @@ def analyze( args ):
 		**vars( args )
 	)
 	fig = plt.figure( 1 )
+	plt.rc( 'grid', linestyle = ":", color = 'gray' )
 	plt.subplot( 211 )
 	plt.title( "data: {}\nlambda: {}\n\n".format( args.data_set, args.Lambda ), loc = "left" )
 	plt.title( "Sample count test\n" )
@@ -107,6 +108,7 @@ def analyze( args ):
 	plt.ylabel( "Error rate" )
 	plt.plot( analyzerResults.sampleCountAnalyzis.sampleCount, analyzerResults.sampleCountAnalyzis.errorTrain, 'b-', label = "train" )
 	plt.plot( analyzerResults.sampleCountAnalyzis.sampleCount, analyzerResults.sampleCountAnalyzis.errorCV, 'g-', label = "CV" )
+	plt.grid()
 	plt.legend()
 	plt.subplot( 212 )
 	plt.title( "Iteration count test" )
@@ -114,6 +116,7 @@ def analyze( args ):
 	plt.ylabel( "Error rate" )
 	plt.plot( analyzerResults.iterationCountAnalyzis.iterationCount, analyzerResults.iterationCountAnalyzis.errorTrain, 'b-', label = "train" )
 	plt.plot( analyzerResults.iterationCountAnalyzis.iterationCount, analyzerResults.iterationCountAnalyzis.errorCV, 'g-', label = "CV" )
+	plt.grid()
 	plt.legend()
 	def on_resize( event ):
 		plt.tight_layout()

@@ -112,7 +112,7 @@ def find_solution( solver, X, y, **kwArgs ):
 	logFileName = kwArgs.pop( "logFileName", "model-analyzer" )
 	verbose = kwArgs.pop( "verbose", False )
 	files = kwArgs.pop( "files", [] )
-	for ign in [ "speech", "debug", "func", "data_set", "solution" ]:
+	for ign in [ "speech", "debug", "func", "data_set", "solution", "topology" ]:
 		kwArgs.pop( ign, None )
 
 	names = []
@@ -170,18 +170,24 @@ def find_solution( solver, X, y, **kwArgs ):
 def analyze( solver, X, y, **kwArgs ):
 	print( ">>> Analyzing a model architecture..." )
 	optimizationParams = kwArgs.pop( "optimizationParams", { "dummy" : [ 0 ] } )
-	verbose = kwArgs.pop( "verbose", False )
-	tries = kwArgs.pop( "tries", None )
+	optimizationParams.update( kwArgs )
+	verbose = optimizationParams.pop( "verbose", False )
+
+	tries = optimizationParams.pop( "tries", None )
 	if tries is None:
 		tries = 10
-	step = kwArgs.pop( "step", None )
+
+	step = optimizationParams.pop( "step", None )
 	if step is None:
 		step = 1.5
-	sampleIterations = kwArgs.pop( "sample_iterations", None )
+
+	sampleIterations = optimizationParams.pop( "sample_iterations", None )
 	if sampleIterations is None:
 		sampleIterations = 50
-	optimizationParams.update( kwArgs )
-	iterations = optimizationParams.pop( "iterations", 50 )
+
+	iterations = optimizationParams.pop( "iterations", None )
+	if iterations is None:
+		iterations = 50
 
 	dataSet = split_data( X, y, testFraction = 0 )
 
@@ -232,15 +238,17 @@ def analyze( solver, X, y, **kwArgs ):
 	iterationCount = []
 	errorTrain = []
 	errorCV = []
+	oldIterations = 0
+	s = None
 	while count < iterations:
 		c = int( count )
 		iterationCount.append( c )
 		errorTrain.append( 0 )
 		errorCV.append( 0 )
-		for k in range( tries ):
-			s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, iterations = c, **optimizationParams )
-			errorTrain[i] += solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
-			errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
+		s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, iterations = c - oldIterations, model = s.model() if s else None, **optimizationParams )
+		oldIterations = c
+		errorTrain[i] += solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
+		errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
 		if verbose:
 			next( p )
 		i += 1
