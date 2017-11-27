@@ -181,8 +181,6 @@ def analyze( solver, X, y, **kwArgs ):
 
 	m = len( dataSet.trainSet.y )
 
-	errorTrain = np.zeros( m )
-	errorCV = np.zeros( m )
 
 	if verbose:
 		steps = int( math.floor( math.log( m, step ) ) ) if step > 1 else m - 1
@@ -191,9 +189,13 @@ def analyze( solver, X, y, **kwArgs ):
 	i = 0
 	count = 1
 	sampleCount = []
+	errorTrain = []
+	errorCV = []
 	while count < m:
 		c = int( count )
 		sampleCount.append( c )
+		errorTrain.append( 0 )
+		errorCV.append( 0 )
 		for k in range( tries ):
 			perm = np.random.permutation( m )[:c]
 			Xt = dataSet.trainSet.X[perm]
@@ -208,8 +210,8 @@ def analyze( solver, X, y, **kwArgs ):
 			count *= step
 		else:
 			count += 1
-	errorTrain = errorTrain[:i]
-	errorCV = errorCV[:i]
+	errorTrain = np.array( errorTrain )
+	errorCV = np.array( errorCV )
 	errorTrain /= tries
 	errorCV /= tries
 	return AnalyzerResult( sampleCount = sampleCount, errorTrain = errorTrain, errorCV = errorCV )

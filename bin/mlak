@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 import sys
 sys.path.extend( [ "../../lib", "../lib", "./lib" ] )
+import os
 
 import traceback
 
@@ -101,7 +102,6 @@ def analyze( args ):
 	plt.title( "data: {}\nlambda: {}\n".format( args.data_set, args.Lambda ), loc = "left" )
 	plt.xlabel( "Sample count" )
 	plt.ylabel( "Error rate" )
-	plt.gca().yaxis.set_minor_formatter( matplotlib.ticker.NullFormatter() )
 	plt.plot( analyzerResults.sampleCount, analyzerResults.errorTrain, 'b-', label = "train" )
 	plt.plot( analyzerResults.sampleCount, analyzerResults.errorCV, 'g-', label = "CV" )
 	plt.legend()
@@ -155,7 +155,7 @@ def main():
 			"  {0} test -d train_data.p -s solution_ABC.p\n"
 			"  {0} analyze -d train_data.p -r 10 -s 1.5 -l 0.1\n"
 			"  {0} show -d train_data.p -z 3 -s solution_ABC.p\n"
-			"  {0} live -s solution_ABC.p".format( sys.argv[0] ),
+			"  {0} live -s solution_ABC.p".format( os.path.basename( sys.argv[0] ) ),
 		formatter_class = argparse.RawTextHelpFormatter
 	)
 	subparsers = parser.add_subparsers()
