@@ -139,10 +139,9 @@ class TopologyParser( List ):
 	] ) )
 
 class KerasSolver:
-	def __prepare_model( shaper, **kwArgs ):
+	def __prepare_model( shaper, nnTopology = None, **kwArgs ):
 		sampleSize = int( sqrt( shaper.feature_count() ) )
-		topology = kwArgs.get( "nnTopology", None )
-		topology = list( map( coerce, parse( topology, TopologyParser ) ) ) if topology else []
+		topology = list( map( coerce, parse( nnTopology, TopologyParser ) ) ) if nnTopology else []
 		model = Sequential()
 		first = True
 		for l in topology:
@@ -161,13 +160,15 @@ class KerasSolver:
 
 		return model
 
-	def train( self_, X, y, **kwArgs ):
+	def type( self_ ):
+		return ma.SolverType.CLASSIFIER
+
+	def train( self_, X, y, iterations = 20, **kwArgs ):
 		shaper = ma.DataShaper( X, y, **kwArgs )
 		sampleSize = int( sqrt( shaper.feature_count() ) )
-		iterations = kwArgs.get( "iterations", 20 )
-		Lambda = kwArgs.get( "Lambda", 0 )
+		shaper.learn_labels( y )
 		y = shaper.map_labels( y )
-		y = keras.utils.to_categorical( y, num_classes = None )
+		y = keras.utils.to_categorical( y, num_classes = shaper.class_count() )
 		model = kwArgs.get( "model", KerasSolver.__prepare_model( shaper, **kwArgs ) )
 		X = shaper.conform( X, addOnes = False )
 		X = X.reshape( X.shape[0], sampleSize, sampleSize, 1 )

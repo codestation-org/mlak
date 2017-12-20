@@ -77,7 +77,7 @@ def train( args ):
 	dio.save( args.solution, solution )
 	if args.debug:
 		print( "solution = {}".format( solution ) )
-	if solution.shaper()._classes is not None:
+	if solution.shaper().is_classifier():
 		for i in range( len( y_orig ) ):
 			if not predict( solver, solution, X_orig, y_orig, i ):
 				return
@@ -93,8 +93,7 @@ def analyze( args ):
 		optimizationParams = {
 			"nnTopology": args.topology,
 			"Lambda": args.Lambda,
-			"functions": [
-			]
+			"functions": None
 		},
 		files = [ args.data_set ],
 		**vars( args )

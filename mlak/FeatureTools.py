@@ -21,6 +21,8 @@ def feature_normalize(X):
 
 
 def add_features( X, functions ):
+	if not functions:
+		return X
 	m = np.size(X, axis=0)
 	features_cnt_old = np.size(X, axis=1)
 	features_cnt_new = np.size(functions)

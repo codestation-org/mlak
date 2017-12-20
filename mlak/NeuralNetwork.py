@@ -34,7 +34,7 @@ def randomize_weights( topology, theta ):
 		offset += s
 
 def compute_cost( theta, *args ):
-	X, y, topology, classCount, Lambda = args
+	X, y, topology, classCount, Lambda, debug = args
 	theta = apply_topology( topology, theta )
 
 	for l in range( len( theta ) ):
@@ -51,7 +51,7 @@ def compute_cost( theta, *args ):
 		r += np.sum( t[:,1:] ** 2 )
 	cost /= m
 	cost += Lambda * r / ( m * 2 )
-	if "debug" in args:
+	if debug:
 		print( "cost = {}                                \r".format( cost ), end = "" )
 	return cost
 
@@ -59,7 +59,7 @@ def activation_derivative( a ):
 	return a * ( 1 - a )
 
 def compute_grad( theta, *args ):
-	X, y, topology, classCount, Lambda = args
+	X, y, topology, classCount, Lambda, debug = args
 	theta = apply_topology( topology, theta )
 	thetaT = []
 	for t in theta:
@@ -100,10 +100,10 @@ def predict_one_vs_all( X, topoTheta ):
 	return np.array( y )
 
 class NeuralNetworkSolver:
-	def __initial_theta( shaper, **kwArgs ):
+	def __initial_theta( shaper, y, nnTopology = None, **kwArgs ):
 		model = kwArgs.get( "model", None )
 		if model is None:
-			topology = kwArgs.get( "nnTopology", None )
+			shaper.learn_labels( y )
 			topology = list( map( int, topology.split( "," ) ) ) if topology else []
 			topology = [shaper.feature_count()] + topology + [shaper.class_count()]
 			s = 0
@@ -114,17 +114,19 @@ class NeuralNetworkSolver:
 			return topology, theta
 		return model[0], model[1]
 
-	def train( self_, X, y, **kwArgs ):
+	def type( self_ ):
+		return ma.SolverType.CLASSIFIER
+
+	def train( self_, X, y, Lambda = 0, iterations = 50, **kwArgs ):
 		shaper = ma.DataShaper( X, y, **kwArgs )
-		iterations = kwArgs.get( "iterations", 50 )
-		Lambda = kwArgs.get( "Lambda", 0 )
+		debug = kwArgs.get( "debug", False )
+		topology, theta = NeuralNetworkSolver.__initial_theta( shaper, y, **kwArgs )
 		y = shaper.map_labels( y )
-		topology, theta = kwArgs.get( "theta", NeuralNetworkSolver.__initial_theta( shaper, **kwArgs ) )
 		X = shaper.conform( X, addOnes = False )
 		theta = optimize.fmin_cg(
 			compute_cost,
 			theta, fprime = compute_grad,
-			args = ( X, y, topology, shaper.class_count(), Lambda ),
+			args = ( X, y, topology, shaper.class_count(), Lambda, debug ),
 			maxiter = iterations,
 			disp = False
 		)

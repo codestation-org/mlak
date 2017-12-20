@@ -1,5 +1,6 @@
 import numpy as np
 import math
+from enum import Enum
 from itertools import product
 from collections import namedtuple
 import inspect
@@ -17,19 +18,34 @@ SampleCountAnalyzis = namedtuple( "SampleCountAnalyzis", "sampleCount errorTrain
 IterationCountAnalyzis = namedtuple( "IterationCountAnalyzis", "iterationCount errorTrain errorCV" )
 AnalyzerResult = namedtuple( "AnalyzerResult", "sampleCountAnalyzis iterationCountAnalyzis" )
 
+class SolverType( Enum ):
+	VALUE_PREDICTOR = 1
+	CLASSIFIER = 2
+
 class DataShaper:
 	def __init__( self_, X, y, **kwArgs ):
 		self_._functions = kwArgs.get( "functions", [] )
 		if self_._functions is None:
 			self_._functions = []
 		self_._featureCount = np.size( X, axis = 1 ) + len( self_._functions )
-		self_._classes = None
+		self_._classesIdToLabel = None
+		self_._classesLabelToId = None
 
 		X = ft.add_features( X, self_._functions )
 		self_._mu, self_._sigma = ft.find_normalization_params( X )
 
-	def map_labels( self_, y ):
-		self_._classes, y = np.unique( y, return_inverse = True )
+	def learn_labels( self_, y ):
+		self_._classesIdToLabel, y = np.unique( y, return_inverse = True )
+		self_._classesLabelToId = {}
+		for id, label in enumerate( self_._classesIdToLabel ):
+			self_._classesLabelToId[label] = id
+
+	def map_labels( self_, y_ ):
+		assert self_._classesIdToLabel is not None, "Call shaper.learn_labels( y ) first!"
+		y_ = y_.flatten()
+		y = np.zeros( len( y_ ), dtype = int )
+		for idx, label in enumerate( y_ ):
+			y[idx] = self_._classesLabelToId.get( label )
 		la.columnize( y )
 		return y
 
@@ -42,7 +58,7 @@ class DataShaper:
 		return X
 
 	def labels( self_, y ):
-		return self_._classes[ y ]
+		return self_._classesIdToLabel[ y ]
 
 	def mu( self_ ):
 		return self_._mu
@@ -51,18 +67,21 @@ class DataShaper:
 		return self_._sigma
 
 	def class_count( self_ ):
-		assert self_._classes is not None, "Call shaper.map_labels( y ) first!"
-		return len( self_._classes )
+		assert self_._classesIdToLabel is not None, "Call shaper.learn_labels( y ) first!"
+		return len( self_._classesIdToLabel )
 
 	def feature_count( self_ ):
 		return self_._featureCount
+
+	def is_classifier( self_ ):
+		return True if self_._classesIdToLabel is not None else False
 
 	def __functions( self_ ):
 		return ", ".join( map( inspect.getsource, self_._functions ) )
 
 	def __repr__( self_ ):
-		return "Shaper( mu = {}, sigma = {}, classes = {}, functions = [{}] )".format(
-			self_._mu, self_._sigma, self_._classes, self_.__functions()
+		return "Shaper( mu = {}, sigma = {}, classesIdToLabel = {}, functions = [{}] )".format(
+			self_._mu, self_._sigma, self_._classesIdToLabel, self_.__functions()
 		)
 
 class Solution:
@@ -111,8 +130,9 @@ def find_solution( solver, X, y, **kwArgs ):
 	optimizationParams = kwArgs.pop( "optimizationParams", { "dummy" : [ 0 ] } )
 	logFileName = kwArgs.pop( "logFileName", "model-analyzer" )
 	verbose = kwArgs.pop( "verbose", False )
+	debug = kwArgs.pop( "debug", False )
 	files = kwArgs.pop( "files", [] )
-	for ign in [ "speech", "debug", "func", "data_set", "solution", "topology" ]:
+	for ign in [ "speech", "func", "data_set", "solution", "topology" ]:
 		kwArgs.pop( ign, None )
 
 	names = []
@@ -143,7 +163,7 @@ def find_solution( solver, X, y, **kwArgs ):
 		for i in range( len( names ) ):
 			op[names[i]] = p[i]
 		print( "testing solution for: {}   ".format( op ) )
-		s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, **op )
+		s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, verbose = verbose, debug = debug, **op )
 		if showFailureRateTrain:
 			fr = solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
 			print( "failureRateTrain = {}         ".format( fr ) )
@@ -167,11 +187,33 @@ def find_solution( solver, X, y, **kwArgs ):
 		solver.verify( solution, dataSet.testSet.X, dataSet.testSet.y ) if profileCount != 1 else failureRate
 	)
 
-def analyze( solver, X, y, **kwArgs ):
+def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 	print( ">>> Analyzing a model architecture..." )
+
+# We must ensure that for classifier each train() invocation
+# gets all classes available...
+	startingSampleCount = 1
+	if solver.type() == SolverType.CLASSIFIER:
+		sortedIndex = np.argsort( y.flatten() )
+		X = X[sortedIndex]
+		y = y[sortedIndex]
+		qq, classStartIndexes = np.unique( y, return_index = True )
+		classCount = len( classStartIndexes )
+		m = len( y )
+		uniformRepresentationIndex = []
+		for i in range( m ):
+			classId = i % classCount
+			uniformRepresentationIndex.append( classStartIndexes[classId] )
+			classStartIndexes[classId] += 1
+		uniformRepresentationIndex = np.array( uniformRepresentationIndex )
+		X = X[uniformRepresentationIndex]
+		y = y[uniformRepresentationIndex]
+		startingSampleCount = classCount
+
 	optimizationParams = kwArgs.pop( "optimizationParams", { "dummy" : [ 0 ] } )
+	for ign in [ "speech", "func", "data_set", "solution", "topology" ]:
+		kwArgs.pop( ign, None )
 	optimizationParams.update( kwArgs )
-	verbose = optimizationParams.pop( "verbose", False )
 
 	tries = optimizationParams.pop( "tries", None )
 	if tries is None:
@@ -198,7 +240,7 @@ def analyze( solver, X, y, **kwArgs ):
 		p = term.Progress( steps, "Analyzing model (sample count): " )
 
 	i = 0
-	count = 1
+	count = startingSampleCount
 	sampleCount = []
 	errorTrain = []
 	errorCV = []
@@ -211,7 +253,7 @@ def analyze( solver, X, y, **kwArgs ):
 			perm = np.random.permutation( m )[:c]
 			Xt = dataSet.trainSet.X[perm]
 			yt = dataSet.trainSet.y[perm]
-			s = solver.train( Xt, yt, iterations = sampleIterations, **optimizationParams )
+			s = solver.train( Xt, yt, iterations = sampleIterations, verbose = verbose, debug = debug, **optimizationParams )
 			errorTrain[i] += solver.verify( s, Xt, yt )
 			errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
 		if verbose:
@@ -245,7 +287,7 @@ def analyze( solver, X, y, **kwArgs ):
 		iterationCount.append( c )
 		errorTrain.append( 0 )
 		errorCV.append( 0 )
-		s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, iterations = c - oldIterations, model = s.model() if s else None, **optimizationParams )
+		s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, iterations = c - oldIterations, model = s.model() if s else None, verbose = verbose, debug = debug, **optimizationParams )
 		oldIterations = c
 		errorTrain[i] += solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
 		errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )

@@ -51,11 +51,12 @@ class LinearRegressionSolver:
 		model = kwArgs.get( "model", None )
 		return model if model is not None else np.zeros( shaper.feature_count() + 1 )
 
-	def train( self_, X, y, **kwArgs ):
-		iterations = kwArgs.get( "iterations", 50 )
-		Lambda = kwArgs.get( "Lambda", 0 )
+	def type( self_ ):
+		return ma.SolverType.VALUE_PREDICTOR
+
+	def train( self_, X, y, Lambda = 0, iterations = 50, **kwArgs ):
 		shaper = mo.DataShaper( X, y, **kwArgs )
-		theta = kwArgs.get( "theta", LinearRegressionSolver.__initial_theta( shaper, **kwArgs ) )
+		theta = LinearRegressionSolver.__initial_theta( shaper, **kwArgs )
 
 		X = shaper.conform( X )
 
