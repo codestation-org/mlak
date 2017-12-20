@@ -9,8 +9,7 @@ import Terminal as term
 class DrawingPad:
 	imgSize = 480
 	width = 40
-	def __init__( self_, **kwArgs ):
-		speech = kwArgs.get( "speech", False )
+	def __init__( self_, solver = None, solution = None, labels = None, repeat = 0, speech = False, **kwArgs ):
 		if speech:
 			import pyttsx3
 			self_._speechEngine = pyttsx3.init()
@@ -20,11 +19,11 @@ class DrawingPad:
 		self_._yold = None
 		self_._img = None
 		self_._imgTk = None
-		self_._solver = kwArgs.get( "solver", None )
-		self_._solution = kwArgs.get( "solution", None )
+		self_._solver = solver
+		self_._solution = solution
 		self_._size = kwArgs.get( "size", int( sqrt( self_._solution.shaper().feature_count() ) ) if self_._solution else None )
-		self_._labels = kwArgs.get( "labels", None )
-		self_._repeat = kwArgs.get( "repeat", 0 )
+		self_._labels = labels
+		self_._repeat = repeat
 		self_._i = 0
 
 	def run( self_ ):

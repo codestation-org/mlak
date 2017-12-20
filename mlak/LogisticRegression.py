@@ -37,8 +37,7 @@ def predict_one_vs_all( X, all_theta ):
 	return np.argmax( np.dot( X, all_theta.T ), axis = 1 )
 
 class LogisticRegressionSolver:
-	def __initial_theta( shaper, y, **kwArgs ):
-		model = kwArgs.get( "model", None )
+	def __initial_theta( shaper, y, model = None, **kwArgs ):
 		if model is None:
 			shaper.learn_labels( y )
 			model = np.zeros( ( shaper.class_count(), shaper.feature_count() + 1 ) )

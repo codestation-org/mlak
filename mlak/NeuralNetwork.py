@@ -100,8 +100,7 @@ def predict_one_vs_all( X, topoTheta ):
 	return np.array( y )
 
 class NeuralNetworkSolver:
-	def __initial_theta( shaper, y, nnTopology = None, **kwArgs ):
-		model = kwArgs.get( "model", None )
+	def __initial_theta( shaper, y, nnTopology = None, model = None, **kwArgs ):
 		if model is None:
 			shaper.learn_labels( y )
 			topology = list( map( int, topology.split( "," ) ) ) if topology else []

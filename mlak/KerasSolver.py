@@ -163,7 +163,7 @@ class KerasSolver:
 	def type( self_ ):
 		return ma.SolverType.CLASSIFIER
 
-	def train( self_, X, y, iterations = 20, **kwArgs ):
+	def train( self_, X, y, iterations = 20, batchSize = 64, **kwArgs ):
 		shaper = ma.DataShaper( X, y, **kwArgs )
 		sampleSize = int( sqrt( shaper.feature_count() ) )
 		shaper.learn_labels( y )
@@ -172,15 +172,15 @@ class KerasSolver:
 		model = kwArgs.get( "model", KerasSolver.__prepare_model( shaper, **kwArgs ) )
 		X = shaper.conform( X, addOnes = False )
 		X = X.reshape( X.shape[0], sampleSize, sampleSize, 1 )
-		X = X.astype('float32')
-		model.fit( X, y, batch_size = 64, epochs = iterations, verbose = 1 )
+		X = X.astype( 'float32' )
+		model.fit( X, y, batch_size = batchSize, epochs = iterations, verbose = 1 )
 		return ma.Solution( model = model, shaper = shaper )
 
 	def verify( self_, solution, X, y ):
 		X = solution.shaper().conform( X, addOnes = False )
 		sampleSize = int( sqrt( solution.shaper().feature_count() ) )
 		X = X.reshape( X.shape[0], sampleSize, sampleSize, 1 )
-		X = X.astype('float32')
+		X = X.astype( 'float32' )
 		model = solution.model()
 		yp = model.predict( X, verbose = 0 )
 		yp = np.argmax( yp, axis = 1 )
@@ -191,7 +191,7 @@ class KerasSolver:
 		X = solution.shaper().conform( X, addOnes = False )
 		sampleSize = int( sqrt( solution.shaper().feature_count() ) )
 		X = X.reshape( X.shape[0], sampleSize, sampleSize, 1 )
-		X = X.astype('float32')
+		X = X.astype( 'float32' )
 		model = solution.model()
 		yp = model.predict( X, verbose = 0 )
 		yp = np.argmax( yp, axis = 1 )

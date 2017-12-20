@@ -47,8 +47,7 @@ def compute_grad_fminCG( theta, *args ):
 	return compute_grad( args[0], args[1], theta, args[2] ).flatten()
 
 class LinearRegressionSolver:
-	def __initial_theta( shaper, **kwArgs ):
-		model = kwArgs.get( "model", None )
+	def __initial_theta( shaper, model = None, **kwArgs ):
 		return model if model is not None else np.zeros( shaper.feature_count() + 1 )
 
 	def type( self_ ):

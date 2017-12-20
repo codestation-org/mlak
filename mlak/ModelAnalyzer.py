@@ -23,8 +23,8 @@ class SolverType( Enum ):
 	CLASSIFIER = 2
 
 class DataShaper:
-	def __init__( self_, X, y, **kwArgs ):
-		self_._functions = kwArgs.get( "functions", [] )
+	def __init__( self_, X, y, functions = [], **kwArgs ):
+		self_._functions = functions
 		if self_._functions is None:
 			self_._functions = []
 		self_._featureCount = np.size( X, axis = 1 ) + len( self_._functions )
@@ -49,8 +49,7 @@ class DataShaper:
 		la.columnize( y )
 		return y
 
-	def conform( self_, X, **kwArgs ):
-		addOnes = kwArgs.get( "addOnes", True )
+	def conform( self_, X, addOnes = True, **kwArgs ):
 		X = ft.add_features( X, self_._functions )
 		X = ft.normalize_features( X, self_._mu, self_._sigma )
 		if addOnes:
@@ -102,9 +101,7 @@ class Solution:
 
 # Split data to train set, cross validation set and test set.
 # *Fraction tells how much of the data shall go into given set.
-def split_data( X, y, **kwArgs ):
-	cvFraction = kwArgs.get( "cvFraction", 0.2 )
-	testFraction = kwArgs.get( "testFraction", 0.2 )
+def split_data( X, y, cvFraction = 0.2, testFraction = 0.2, **kwArgs ):
 	assert cvFraction + testFraction < 1
 	m = np.size( X, 0 )
 	cvSize = int( m * cvFraction )
@@ -124,14 +121,17 @@ def split_data( X, y, **kwArgs ):
 
 	return DataSet( Observations( XTrain, yTrain ), Observations( XCV, yCV ), Observations( XTest, yTest ) )
 
-def find_solution( solver, X, y, **kwArgs ):
+def find_solution(
+	solver, X, y,
+	showFailureRateTrain = False,
+	optimizationParams = { "dummy" : [ 0 ] },
+	logFileName = "model-analyzer",
+	verbose = False,
+	debug = False,
+	files = [],
+	**kwArgs
+):
 	print( ">>> Looking for a solution..." )
-	showFailureRateTrain = kwArgs.pop( "showFailureRateTrain", False )
-	optimizationParams = kwArgs.pop( "optimizationParams", { "dummy" : [ 0 ] } )
-	logFileName = kwArgs.pop( "logFileName", "model-analyzer" )
-	verbose = kwArgs.pop( "verbose", False )
-	debug = kwArgs.pop( "debug", False )
-	files = kwArgs.pop( "files", [] )
 	for ign in [ "speech", "func", "data_set", "solution", "topology" ]:
 		kwArgs.pop( ign, None )
 
@@ -287,7 +287,15 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 		iterationCount.append( c )
 		errorTrain.append( 0 )
 		errorCV.append( 0 )
-		s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, iterations = c - oldIterations, model = s.model() if s else None, verbose = verbose, debug = debug, **optimizationParams )
+		s = solver.train(
+			dataSet.trainSet.X,
+			dataSet.trainSet.y,
+			iterations = c - oldIterations,
+			model = s.model() if s else None,
+			verbose = verbose,
+			debug = debug,
+			**optimizationParams
+		)
 		oldIterations = c
 		errorTrain[i] += solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
 		errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
