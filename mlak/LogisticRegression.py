@@ -1,9 +1,10 @@
 from copy import deepcopy
-import LinearAlgebra as la
-import MathTools as mt
-import ModelAnalyzer as ma
 import numpy as np
 import scipy.optimize as optimize
+
+import mlak.LinearAlgebra as la
+import mlak.MathTools as mt
+import mlak.ModelAnalyzer as ma
 
 def compute_cost( theta, *args ):
 	X, y, Lambda = args

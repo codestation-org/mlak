@@ -4,7 +4,7 @@ import numpy as np
 from tkinter import *
 from PIL import Image, ImageDraw, ImageTk
 
-import Terminal as term
+import mlak.Terminal as term
 
 class DrawingPad:
 	imgSize = 480

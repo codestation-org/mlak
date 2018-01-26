@@ -3,3 +3,8 @@
 lib/__pycache__/
 .spyderworkspace
 .spyderproject
+.coverage
+tests/__pycache__/
+tests/lib/__pycache__/
+.spyproject
+*.egg-info

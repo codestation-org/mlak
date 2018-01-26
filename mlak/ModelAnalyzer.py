@@ -5,11 +5,11 @@ from itertools import product
 from collections import namedtuple
 import inspect
 
-import OptimizationAlgorithms as oa
-import LinearAlgebra as la
-import FeatureTools as ft
-import Terminal as term
-from Logger import Logger
+import mlak.OptimizationAlgorithms as oa
+import mlak.LinearAlgebra as la
+import mlak.FeatureTools as ft
+import mlak.Terminal as term
+from mlak.Logger import Logger
 
 Observations = namedtuple( "Observations", "X y" )
 DataSet = namedtuple( "DataSet", "trainSet crossValidationSet testSet" )

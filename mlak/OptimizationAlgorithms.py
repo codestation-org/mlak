@@ -1,7 +1,8 @@
 from copy import deepcopy
 import numpy as np
 import scipy.optimize as optimize
-import LinearRegression as linReg
+
+from mlak import LinearRegression as linReg
 
 def gradient_descent( X, y, theta, alpha, iterations, lambda_val ):
 	m = len( y )

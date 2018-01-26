@@ -1,13 +1,12 @@
 from copy import deepcopy
 import numpy as np
 
-import LinearAlgebra as la
-import ModelAnalyzer as mo
+import mlak.LinearAlgebra as la
+import mlak.ModelAnalyzer as mo
 
-import MathTools as mt
-import ModelAnalyzer as ma
-import numpy as np
-import OptimizationAlgorithms as oa
+import mlak.MathTools as mt
+import mlak.ModelAnalyzer as ma
+import mlak.OptimizationAlgorithms as oa
 
 
 # Compute cost value for given theta.

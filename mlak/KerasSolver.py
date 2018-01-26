@@ -15,7 +15,7 @@ import keras
 import types
 import tempfile
 
-import ModelAnalyzer as ma
+import mlak.ModelAnalyzer as ma
 
 def make_keras_picklable():
 	def __getstate__(self):

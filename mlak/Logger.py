@@ -14,7 +14,8 @@ import datetime
 import os
 import json
 from collections import OrderedDict
-import DataIO as dio
+
+import mlak.DataIO as dio
 
 class Logger:
 

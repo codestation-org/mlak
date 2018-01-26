@@ -10,8 +10,8 @@ from keras.models import load_model
 from keras.models import Model
 from keras.layers import Input
 
-import FeatureTools as ft
-import ModelAnalyzer as ma
+import mlak.FeatureTools as ft
+import mlak.ModelAnalyzer as ma
 
 
 class NotImplementedException(Exception):

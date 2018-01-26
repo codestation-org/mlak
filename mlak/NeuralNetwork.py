@@ -2,9 +2,9 @@ import math
 import numpy as np
 import scipy.optimize as optimize
 
-import LinearAlgebra as la
-import MathTools as mt
-import ModelAnalyzer as ma
+import mlak.LinearAlgebra as la
+import mlak.MathTools as mt
+import mlak.ModelAnalyzer as ma
 
 def apply_topology( topology, theta_ ):
 	theta = []

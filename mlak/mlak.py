@@ -1,6 +1,5 @@
 #! /usr/bin/python3
 import sys
-sys.path.extend( [ "../../lib", "../lib", "./lib" ] )
 import os
 
 import traceback
@@ -11,20 +10,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 
-import LinearRegression as linReg
-import LogisticRegression as logReg
-import NeuralNetwork as nn
-import ModelAnalyzer as ma
+import mlak.LinearRegression as linReg
+import mlak.LogisticRegression as logReg
+import mlak.NeuralNetwork as nn
+import mlak.ModelAnalyzer as ma
 
-import DataIO as dio
-import Terminal as term
-import Visual as visual
+import mlak.DataIO as dio
+import mlak.Terminal as term
+import mlak.Visual as visual
 
 preferredEngine = None
 def set_preferred_engine( engine ):
 	global preferredEngine
 	if engine == "keras":
-		import KerasSolver as ks
+		import mlak.KerasSolver as ks
 		preferredEngine = ks.KerasSolver
 		ks.make_keras_picklable()
 	elif engine == "linreg":

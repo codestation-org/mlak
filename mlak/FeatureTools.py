@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.special import expit
-import Terminal as term
+
+import mlak.Terminal as term
 
 
 def find_normalization_params( X ):
