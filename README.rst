@@ -1,4 +1,5 @@
-## Machine Learning Army Knife
+Machine Learning Army Knife
+===========================
 
 A tool for machine learning experimentation.
 
@@ -10,4 +11,14 @@ A tool for machine learning experimentation.
 
 With `mlak` one can create data samples,
 train various model, test and analyze them.
+
+Development HOW-TO:
+
+To install (run from mlak source top level directory)::
+
+$ pip3 install --user --upgrade -e ../mlak/
+
+To uninstall::
+
+$ pip3 uninstall mlak
 

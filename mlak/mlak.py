@@ -219,9 +219,7 @@ def main():
 
 
 	parser.add_argument(
-		"-e", "--engine", metavar = "name", choices = [ "struggle", "keras", "linreg", "logreg" ], type = set_preferred_engine,
-		action = "store",
-		help = "Choose machine learning engine."
+		"-e", "--engine", metavar = "name", choices = [ "struggle", "keras", "linreg", "logreg" ], type = str, help = "Choose machine learning engine."
 	)
 	parser.add_argument( "-s", "--speech", help = "Provide voice feedback for predictions.", action = 'store_true' )
 	parser.add_argument( "-v", "--verbose", help = "Increase program verbosity level.", action = 'store_true' )
@@ -230,8 +228,11 @@ def main():
 	parser.set_defaults( speech = False )
 	parser.set_defaults( verbose = False )
 	parser.set_defaults( debug = False )
-	parser.set_defaults( func = lambda x : parser.print_help() )
+	show_help = lambda x : parser.print_help()
+	parser.set_defaults( func = show_help )
 	args = parser.parse_args()
+	if args.func != show_help:
+		set_preferred_engine( args.engine )
 	args.func( args )
 	return
 
