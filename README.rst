@@ -22,3 +22,7 @@ To uninstall::
 
 $ pip3 uninstall mlak
 
+To run tests::
+
+$ python3-coverage run --source=. -m unittest discover -v && python3-coverage report -m
+

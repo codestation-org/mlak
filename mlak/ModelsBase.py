@@ -110,7 +110,7 @@ class KerasAbstractModel(AbstractModel):
 # This class implements AbstractModel for Keras (sequential) model
 #
 class KerasSequentialModelFactory:
-	
+
 	def createModel(input_shape, layers_definitions, compile_options):
 		module = __import__("keras")
 		module_layers = getattr(module, "layers")
@@ -120,7 +120,7 @@ class KerasSequentialModelFactory:
 			class_name = layer_definition.class_name
 			config = layer_definition.config
 			layer_class = getattr(module_layers, class_name)
-			x = layer_class(**config)(x)		
+			x = layer_class(**config)(x)
 		predictions = x
 
 		model = Model(inputs=inputs, outputs=predictions)
@@ -147,7 +147,7 @@ class ModelRunner:
 class ModelTester:
 
 	DEFAULT_EPOCHS = 10  #should be as Keras	 has
-	
+
 	def __init__(self, model, X, y, **trainKwArgs):
 		self.modelRunner = ModelRunner(model)
 		self.X = X
@@ -160,7 +160,7 @@ class ModelTester:
 		y_tr = ds.trainSet.y
 		X_tt = ds.testSet.X
 		y_tt = ds.testSet.y
-		
+
 		runningTrainKwArgs = self.trainKwArgs
 		epochs = runningTrainKwArgs.get('epochs', ModelTester.DEFAULT_EPOCHS)
 
@@ -170,7 +170,7 @@ class ModelTester:
 			runningEpochs = int(epochs*(step+1)/steps)
 			runningTrainKwArgs['epochs'] = runningEpochs
 			self.modelRunner.train(X_tr, y_tr, **runningTrainKwArgs)
-			
+
 			result_tr = self.modelRunner(evaluate(X_tr, y_tr))
 			result_tt = self.modelRunner(evaluate(X_tt, y_tt))
 			results_tr.append(result_tr)
@@ -189,9 +189,9 @@ class ModelTester:
 			result_tt = np.zeros((1, 2))
 			for trial in range(trials):
 
-				perm = <=== TUTAJ RANDOM PERM O MOCY = count
-				running_X <== TUTAJ WYBRANE X
-				running_y <== TUTAJ WYBRANE y
+#				perm = <=== TUTAJ RANDOM PERM O MOCY = count
+#				running_X <== TUTAJ WYBRANE X
+#				running_y <== TUTAJ WYBRANE y
 
 				ds = ma.split_data(running_X, running_y, cvFraction = 0, testFraction = 0.3)
 				X_tr = ds.trainSet.X
@@ -202,22 +202,21 @@ class ModelTester:
 				self.modelRunner.train(X_tr, y_tr, **runningTrainKwArgs)
 				trial_result_tr = self.modelRunner(evaluate(X_tr, y_tr))
 				trial_result_tt = self.modelRunner(evaluate(X_tt, y_tt))
-				
+
 				result_tr += trial_result_tr
 				result_tt += trial_result_tt
-				
+
 			result_tr /= trials
 			result_tt += trials
 
 			results_tr.append(result_tr)
 			results_tt.append(result_tt)
-		
+
 		return {'tr': results_tr, 'tt': results_tt}
 
 
 class MultiModelTester:
-	
-	def 
+	pass
 
 
 """
@@ -227,7 +226,7 @@ class MultiModelTester:
 3. Analiza krzywej uczenia dla konkretnego modelu (co daje zwiększanie batch size)
 3. Analiza przy jednej warstwie ukrytej, co daje zwiększanie jej rozmiaru
 4. Analiza co daje wielkość regularyzacji (jedna warstwa ukryta, kernel_regularizer)
-5. 
+5.
 """
 
 #given:

@@ -49,6 +49,7 @@ setup(
 	extras_require = {  # Optional
 		'test': ['coverage'],
 	},
+	test_suite = "unittest2.collector",
 
 	# If there are data files included in your packages that need to be
 	# installed, specify them here.
