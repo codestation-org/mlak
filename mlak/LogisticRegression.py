@@ -13,7 +13,7 @@ def compute_cost( theta, *args ):
 	hr = mt.sigmoid_v( np.dot( X, theta ) )
 
 	m = len( y )
-	err = -( np.dot( y.T, mt.log_v( hr ) ) + np.dot( ( 1 - y.T ), mt.log_v( 1 - hr ) ) )
+	err = -( np.dot( y.T, mt.log( hr ) ) + np.dot( ( 1 - y.T ), mt.log( 1 - hr ) ) )
 
 	theta[ 0 ] = 0
 	r = Lambda * np.sum( theta ** 2 ) / ( m * 2 )

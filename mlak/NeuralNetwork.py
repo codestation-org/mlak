@@ -45,7 +45,7 @@ def compute_cost( theta, *args ):
 	m = len( y )
 	yp = np.zeros( ( m, classCount ) )
 	yp[np.arange( m ), y.flatten()] = 1
-	cost = np.sum( -( yp * mt.log_v( X ) + ( 1 - yp ) * mt.log_v( 1 - X ) ) )
+	cost = np.sum( -( yp * mt.log( X ) + ( 1 - yp ) * mt.log( 1 - X ) ) )
 	r = 0
 	for t in theta:
 		r += np.sum( t[:,1:] ** 2 )

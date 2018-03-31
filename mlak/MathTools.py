@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.special import expit
 
-def log_v( x ):
+def log( x ):
 	epsilon = 0.1 ** 100
 	x[x < epsilon] = epsilon
 	return np.log( x )

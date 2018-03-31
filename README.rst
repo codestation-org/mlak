@@ -26,3 +26,7 @@ To run tests::
 
 $ python3-coverage run --source=. -m unittest discover -v && python3-coverage report -m
 
+To generate HTML test coverage statistics::
+
+$ python3-coverage run --source=. -m unittest discover -v && python3-coverage html --omit='tests/*,setup.py'
+
