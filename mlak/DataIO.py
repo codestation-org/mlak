@@ -44,16 +44,16 @@ def save( path_, data_ ):
 def write_text_to_file(path, content):
 	obj = open(path, 'wb')
 	obj.write(content.encode())
-	obj.close
+	obj.close()
 
 def append_text_to_file(path, content):
 	obj = open(path, 'ab')
 	obj.write(content.encode())
-	obj.close
+	obj.close()
 
 def get_file_md5(path):
-    md5 = hashlib.md5()
-    with open(path,'rb') as f:
-        for chunk in iter(lambda: f.read(8192), b''):
-            md5.update(chunk)
-    return md5.hexdigest()
+	md5 = hashlib.md5()
+	with open(path,'rb') as f:
+		for chunk in iter(lambda: f.read(8192), b''):
+			md5.update(chunk)
+	return md5.hexdigest()
