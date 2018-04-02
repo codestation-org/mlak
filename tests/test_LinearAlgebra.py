@@ -37,10 +37,9 @@ class TestMathTools( unittest.TestCase ):
 
 	def test_normal_equation( self ):
 		poly = np.array( [ [1, 2, 3], [4, 5, 6], [7, 8, 9] ] )
-		linSpace = np.linspace( -10, 10, 20 )
 		X = []
 		y = []
-		for x0, x1, x2 in product( *( linSpace, linSpace, linSpace ) ):
+		for x0, x1, x2 in product( np.linspace( -10, 10, 20 ), repeat = 3 ):
 			X.append( [ x0, x1, x2 ] )
 			y.append(
 				x0 ** 2 * poly[0][0] + x0 * poly[0][1] + poly[0][2]
