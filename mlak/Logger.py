@@ -21,7 +21,7 @@ class Logger:
 
 	default_log_file_name = "default.log"
 	default_log_file_ext  = "log"
-	default_log_dir       = "logs/"
+	default_log_dir       = "logs"
 	default_split         = False
 
 	#log(data, files, log_file_name="default.log", log_file_ext="log", log_dir="logs/", split=False):
@@ -35,9 +35,9 @@ class Logger:
 		os.makedirs(log_dir, exist_ok = True)
 
 		if split:
-			log_file_name = Logger.get_unique_log_filename() + '.' + log_file_ext
+			log_file_name = Logger.get_unique_log_filename()
 
-		log_full_path = log_dir + log_file_name
+		log_full_path = log_dir + "/" + log_file_name + "." + log_file_ext
 
 		json = Logger.get_json(data, files) + '\n'
 
