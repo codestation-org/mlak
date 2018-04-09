@@ -5,7 +5,6 @@ from itertools import product
 from collections import namedtuple
 import inspect
 
-import mlak.OptimizationAlgorithms as oa
 import mlak.LinearAlgebra as la
 import mlak.FeatureTools as ft
 import mlak.Terminal as term
@@ -23,7 +22,7 @@ class SolverType( Enum ):
 	CLASSIFIER = 2
 
 class DataShaper:
-	def __init__( self_, X, y, functions = [], **kwArgs ):
+	def __init__( self_, X, functions = [], **kwArgs ):
 		self_._functions = functions
 		if self_._functions is None:
 			self_._functions = []
@@ -42,7 +41,8 @@ class DataShaper:
 
 	def map_labels( self_, y_ ):
 		assert self_._classesIdToLabel is not None, "Call shaper.learn_labels( y ) first!"
-		y_ = y_.flatten()
+		if type( y_ ) is np.ndarray:
+			y_ = y_.flatten()
 		y = np.zeros( len( y_ ), dtype = int )
 		for idx, label in enumerate( y_ ):
 			y[idx] = self_._classesLabelToId.get( label )
