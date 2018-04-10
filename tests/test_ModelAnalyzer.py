@@ -46,6 +46,27 @@ class TestModelAnalyzer( unittest.TestCase ):
 		ds.learn_labels( np.array( [4, 5, 6] ) )
 		npt.assert_equal( ds.map_labels( np.array( [[6], [5], [4]] ) ), [[2], [1], [0]] )
 
+
+	def test_split_data( self ):
+		m = 100
+		X = np.arange( m )
+		y = np.arange( m )
+		ds = split_data( X, y, cvFraction = 0.3, testFraction  = 0.3 )
+		self.assertEqual( len( ds.trainSet.X ), 40 )
+		self.assertEqual( len( ds.trainSet.y ), 40 )
+		self.assertEqual( len( ds.crossValidationSet.X ), 30 )
+		self.assertEqual( len( ds.crossValidationSet.y ), 30 )
+		self.assertEqual( len( ds.testSet.X ), 30 )
+		self.assertEqual( len( ds.testSet.y ), 30 )
+		npt.assert_equal( ds.trainSet.X, ds.trainSet.y )
+		npt.assert_equal( ds.crossValidationSet.X, ds.crossValidationSet.y )
+		npt.assert_equal( ds.testSet.X, ds.testSet.y )
+		Xd = np.sort( np.concatenate( ( ds.trainSet.X, ds.crossValidationSet.X, ds.testSet.X ) ) )
+		yd = np.sort( np.concatenate( ( ds.trainSet.y, ds.crossValidationSet.y, ds.testSet.y ) ) )
+		npt.assert_equal( Xd, X )
+		npt.assert_equal( yd, y )
+
+
 if __name__ == '__main__':
 	unittest.main()
 
