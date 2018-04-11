@@ -11,7 +11,7 @@ def gradient_descent( algo, X, y, theta, alpha, iterations, lambda_val ):
 	J_history = np.zeros( iterations )
 	for i in range( iterations ):
 		cost = algo.cost( X, y, theta, lambda_val )
-		grad = algo.grad( X, y, theta, lambda_val )
+		grad = algo.grad( X, y, theta, lambda_val ).flatten()
 		theta = theta - alpha * grad
 		J_history[i] = cost
 	return theta, J_history
