@@ -48,7 +48,7 @@ class LogisticRegressionSolver:
 		return ma.SolverType.CLASSIFIER
 
 	def train( self_, X, y, Lambda = 0, iterations = 50, **kwArgs ):
-		shaper = ma.DataShaper( X, y, **kwArgs )
+		shaper = ma.DataShaper( X, **kwArgs )
 		theta = LogisticRegressionSolver.__initial_theta( shaper, y, **kwArgs )
 		y = shaper.map_labels( y )
 		X = shaper.conform( X )

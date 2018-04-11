@@ -164,7 +164,7 @@ class KerasSolver:
 		return ma.SolverType.CLASSIFIER
 
 	def train( self_, X, y, iterations = 20, batchSize = 64, **kwArgs ):
-		shaper = ma.DataShaper( X, y, **kwArgs )
+		shaper = ma.DataShaper( X, **kwArgs )
 		sampleSize = int( sqrt( shaper.feature_count() ) )
 		shaper.learn_labels( y )
 		y = shaper.map_labels( y )

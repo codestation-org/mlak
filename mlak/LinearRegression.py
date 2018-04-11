@@ -39,12 +39,6 @@ def compute_grad( X, y, theta, lambda_val ):
 def compute_cost_grad( X, y, theta, lambda_val ):
 	return compute_cost( X, y, theta, lambda_val ), compute_grad( X, y, theta, lambda_val )
 
-def compute_cost_fminCG( theta, *args ):
-	return compute_cost( args[0], args[1], theta, args[2] )
-
-def compute_grad_fminCG( theta, *args ):
-	return compute_grad( args[0], args[1], theta, args[2] ).flatten()
-
 class LinearRegressionSolver:
 	def __initial_theta( shaper, model = None, **kwArgs ):
 		return model if model is not None else np.zeros( shaper.feature_count() + 1 )
@@ -53,12 +47,12 @@ class LinearRegressionSolver:
 		return ma.SolverType.VALUE_PREDICTOR
 
 	def train( self_, X, y, Lambda = 0, iterations = 50, **kwArgs ):
-		shaper = mo.DataShaper( X, y, **kwArgs )
+		shaper = mo.DataShaper( X, **kwArgs )
 		theta = LinearRegressionSolver.__initial_theta( shaper, **kwArgs )
 
 		X = shaper.conform( X )
 
-		theta = oa.gradient_descent_fminCG( X, y, theta, iterations, Lambda, disp = False )
+		theta = oa.gradient_descent_fminCG( oa.Algorithm( compute_cost, compute_grad ), X, y, theta, iterations, Lambda, disp = False )
 
 		return ma.Solution( model = theta, shaper = shaper )
 

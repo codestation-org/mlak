@@ -117,7 +117,7 @@ class NeuralNetworkSolver:
 		return ma.SolverType.CLASSIFIER
 
 	def train( self_, X, y, Lambda = 0, iterations = 50, **kwArgs ):
-		shaper = ma.DataShaper( X, y, **kwArgs )
+		shaper = ma.DataShaper( X, **kwArgs )
 		debug = kwArgs.get( "debug", False )
 		topology, theta = NeuralNetworkSolver.__initial_theta( shaper, y, **kwArgs )
 		y = shaper.map_labels( y )

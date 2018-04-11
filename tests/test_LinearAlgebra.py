@@ -11,7 +11,7 @@ from FeatureTools import add_features
 from LinearAlgebra import columnize, transpose, add_ones_column, normal_equation
 import numpy as np
 
-class TestMathTools( unittest.TestCase ):
+class TestLinearAlgebra( unittest.TestCase ):
 	def test_columnize( self ):
 		y = np.array( [1, 2, 3, 4] )
 		self.assertEqual( y.shape, ( 4, ) )
