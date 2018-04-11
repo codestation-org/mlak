@@ -103,7 +103,7 @@ class NeuralNetworkSolver:
 	def __initial_theta( shaper, y, nnTopology = None, model = None, **kwArgs ):
 		if model is None:
 			shaper.learn_labels( y )
-			topology = list( map( int, topology.split( "," ) ) ) if topology else []
+			topology = list( map( int, nnTopology.split( "," ) ) ) if nnTopology else []
 			topology = [shaper.feature_count()] + topology + [shaper.class_count()]
 			s = 0
 			for i in range( 1, len( topology ) ):

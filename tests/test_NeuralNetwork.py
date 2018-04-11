@@ -8,17 +8,17 @@ import unittest
 import numpy.testing as npt
 
 from FeatureTools import add_features
-from LogisticRegression import *
+from NeuralNetwork import *
 from ModelAnalyzer import *
 from data_gen import *
 import numpy as np
 
-class TestLogisticRegression( unittest.TestCase ):
+class TestNeuralNetwork( unittest.TestCase ):
 	def test( self ):
 		X, y = gen_logistic_data()
-		solver = LogisticRegressionSolver()
+		solver = NeuralNetworkSolver()
 		self.assertEqual( solver.type(), ma.SolverType.CLASSIFIER )
-		solution = solver.train( X, y, Lambda = 1 )
+		solution = solver.train( X, y, nnTopology = "10", Lambda = 1 )
 		self.assertEqual( solution.shaper().class_count(), 3 )
 		cost = solver.verify( solution, X, y )
 		self.assertEqual( cost, 0 )
