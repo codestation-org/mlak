@@ -30,10 +30,6 @@ def compute_grad( theta, *args ):
 	grad = ( np.dot( X.T, ( hr - y ) ) + theta * Lambda ) / m
 	return grad.flatten()
 
-def predict( X, theta ):
-	p = mt.sigmoid( np.dot( X, theta ) ) >= 0.5
-	return p
-
 def predict_one_vs_all( X, all_theta ):
 	return np.argmax( np.dot( X, all_theta.T ), axis = 1 )
 

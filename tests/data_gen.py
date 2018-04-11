@@ -2,6 +2,8 @@
 
 from itertools import product
 import numpy as np
+from math import *
+import mlak.Visual as vis
 
 def gen_regression_data():
 	poly = np.array( [ [1, 2, 3], [4, 5, 6], [7, 8, 9] ] )
@@ -19,4 +21,31 @@ def gen_regression_data():
 	y = np.array( y )
 	y.shape = ( m, 1 )
 	return ( X, y )
+
+def gen_logistic_data():
+	def class_drill( x1, x2, p ):
+		d = x2 * ( 1 + p[2] ) + p[3]
+		return abs( ( x1 * ( 1 + p[0] ) + p[1] ) % ( d if d else 0.001 ) )
+
+	classes = (
+		( lambda x1, x2, p: cos( 2 * sqrt( ( x1 * ( 1 + p[0] ) + p[1] ) ** 2 + ( x2 * ( 1 + p[2] ) + p[3] ) ** 2 ) ), "ripple" ),
+		( lambda x1, x2, p: abs(  x1 * ( 1 + p[0] ) + p[1] ) + abs( x2 * ( 1 + p[2] ) + p[3] ), "diamond" ),
+		( class_drill, "drill" ),
+	)
+	X = []
+	y = []
+	for c in classes:
+		for p in product( ( 0, 0.2, 0.4, -0.2, -0.4 ), repeat = 4 ):
+			x = []
+			for x1, x2 in product( np.linspace( -2, 2, 16 ), repeat = 2 ):
+				x.append( c[0]( x1, x2, p ) )
+			X.append( x )
+			y.append( c[1] )
+	return np.array( X ), np.array( y )
+
+if __name__ == '__main__':
+	X, y = gen_logistic_data()
+	se = vis.SampleEditor( X, y, zoom = 10 )
+	se.run()
+	print( len( y ) )
 
