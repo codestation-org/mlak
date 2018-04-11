@@ -7,7 +7,7 @@ from itertools import product
 import unittest
 import numpy.testing as npt
 
-from NeuralNetwork import *
+from KerasSolver import *
 from ModelAnalyzer import *
 from data_gen import *
 import numpy as np
@@ -15,9 +15,9 @@ import numpy as np
 class TestNeuralNetwork( unittest.TestCase ):
 	def test( self ):
 		X, y = gen_logistic_data()
-		solver = NeuralNetworkSolver()
+		solver = KerasSolver()
 		self.assertEqual( solver.type(), ma.SolverType.CLASSIFIER )
-		solution = solver.train( X, y, nnTopology = "10", Lambda = 1 )
+		solution = solver.train( X, y, nnTopology = "N(10)", Lambda = 1 )
 		self.assertEqual( solution.shaper().class_count(), 3 )
 		cost = solver.verify( solution, X, y )
 		self.assertEqual( cost, 0 )
