@@ -35,10 +35,6 @@ def compute_grad( X, y, theta, lambda_val ):
 
 	return grad
 
-# Compute both `cost` and `gradient` for given \theta and given equation system.
-def compute_cost_grad( X, y, theta, lambda_val ):
-	return compute_cost( X, y, theta, lambda_val ), compute_grad( X, y, theta, lambda_val )
-
 class LinearRegressionSolver:
 	def __initial_theta( shaper, model = None, **kwArgs ):
 		return model if model is not None else np.zeros( shaper.feature_count() + 1 )
@@ -63,3 +59,4 @@ class LinearRegressionSolver:
 	def predict( self_, solution, X ):
 		X = solution.shaper().conform( X )
 		return np.dot( X, solution.model() )
+
