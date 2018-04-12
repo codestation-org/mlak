@@ -1,0 +1,9 @@
+os: linux
+language: Python
+script:
+  - ./tests/run.sh
+addons:
+  apt:
+    packages:
+      - python3-coverage
+
