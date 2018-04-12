@@ -12,6 +12,10 @@ A tool for machine learning experimentation.
 With `mlak` one can create data samples,
 train various model, test and analyze them.
 
+.. image:: https://travis-ci.org/codestation-org/mlak.svg?branch=master
+   :target: https://travis-ci.org/codestation-org/mlak
+
+
 Development HOW-TO:
 
 To install (run from mlak source top level directory)::
