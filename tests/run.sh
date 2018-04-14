@@ -9,5 +9,10 @@ fi
 
 export TF_CPP_MIN_LOG_LEVEL=3
 
-python3-coverage run --source=. -m unittest discover -v && python3-coverage ${MODE} --omit='tests/*,setup.py,mlak/Visual.py'
+COVERAGE="python3-coverage"
+if which coverage > /dev/null 2>&1 ; then
+	COVERAGE="coverage"
+fi
+
+${COVERAGE} run --source=. -m unittest discover -v && ${COVERAGE} ${MODE} --omit='tests/*,setup.py,mlak/Visual.py'
 

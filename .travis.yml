@@ -1,21 +1,19 @@
 os: linux
 language: python
 python:
-  - "3.5"
+  - "3.6"
 virtualenv:
-  system_site_packages: true
+  system_site_packages: false
   user_site_packages: true
 install:
-  - pip3 install --user --upgrade pip
-  - pip3 install --user --upgrade -e ../mlak/
+  - pip3 install --upgrade pip
+  - pip3 install --upgrade coverage
+  - pip3 install --upgrade -e ../mlak/
 script:
   - ./tests/run.sh
 addons:
   apt:
     packages:
-      - python3-coverage
       - python3-pip
       - python3-tk
-      - python3-pil
-      - python3-pil.imagetk
 

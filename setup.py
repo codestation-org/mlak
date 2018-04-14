@@ -44,7 +44,7 @@ setup(
 	license = "Python Software Foundation License",
 	keywords = "machine learning keras neural network neuronal logistic regression linear model analyzer",  # Optional
 	packages = find_packages( exclude = ['contrib', 'docs', 'tests'] ),  # Required
-	install_requires = ["numpy", "scipy", "matplotlib", "tensorflow", "keras"],  # Optional
+	install_requires = ["numpy", "scipy", "matplotlib", "tensorflow", "keras", "h5py", "pypeg2", "Pillow"],  # Optional
 
 	extras_require = {  # Optional
 		'test': ['coverage'],
