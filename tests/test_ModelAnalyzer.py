@@ -8,6 +8,7 @@ import numpy.testing as npt
 
 from ModelAnalyzer import *
 from tests.data_gen import *
+from mlak.utils import CapturedStdout
 import LinearRegression as linReg
 import numpy as np
 
@@ -71,27 +72,33 @@ class TestModelAnalyzer( unittest.TestCase ):
 	def test_find_solution( self ):
 		X, y = gen_regression_data()
 		solver = linReg.LinearRegressionSolver()
-		optimizationResults = find_solution(
-			solver, X, y,
-			showFailureRateTrain = True,
-			optimizationParams = {
-				"nnTopology": "",
-				"Lambda": [0.01, 0.1, 1],
-				"functions": [
-					[],
-					[
-						lambda x: x[0] ** 2,
-						lambda x: x[1] ** 2
+		with CapturedStdout():
+			optimizationResults = find_solution(
+				solver, X, y,
+				showFailureRateTrain = True,
+				optimizationParams = {
+					"nnTopology": "",
+					"Lambda": [0.01, 0.1, 1],
+					"functions": [
+						[],
+						[
+							lambda x: x[0] ** 2,
+							lambda x: x[1] ** 2
+						],
+						[
+							lambda x: x[0] ** 2,
+							lambda x: x[1] ** 2,
+							lambda x: x[2] ** 2
+						]
 					]
-				]
-			},
-			files = [],
-			log = {
-				"log_dir": "out",
-				"log_file_name": "mlak"
-			}
-		)
-
+				},
+				files = [],
+				log = {
+					"log_dir": "out",
+					"log_file_name": "mlak"
+				}
+			)
+		self.assertAlmostEqual( optimizationResults.failureRateTest, 1e-07, 6 )
 
 if __name__ == '__main__':
 	unittest.main()
