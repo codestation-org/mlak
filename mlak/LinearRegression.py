@@ -2,7 +2,7 @@ from copy import deepcopy
 import numpy as np
 
 import mlak.LinearAlgebra as la
-import mlak.ModelAnalyzer as mo
+import mlak.ModelAnalyzer as ma
 
 import mlak.MathTools as mt
 import mlak.ModelAnalyzer as ma
@@ -36,14 +36,14 @@ def compute_grad( X, y, theta, lambda_val ):
 	return grad
 
 class LinearRegressionSolver:
-	def __initial_theta( shaper, model = None, **kwArgs ):
-		return model if model is not None else np.zeros( shaper.feature_count() + 1 )
+	def __initial_theta( shaper, solution = None, **kwArgs ):
+		return solution.model() if solution else np.zeros( shaper.feature_count() + 1 )
 
 	def type( self_ ):
 		return ma.SolverType.VALUE_PREDICTOR
 
-	def train( self_, X, y, Lambda = 0, iterations = 50, **kwArgs ):
-		shaper = mo.DataShaper( X, **kwArgs )
+	def train( self_, X, y, solution = None, Lambda = 0, iterations = 50, **kwArgs ):
+		shaper = solution.shaper() if solution else ma.DataShaper( X, **kwArgs )
 		theta = LinearRegressionSolver.__initial_theta( shaper, **kwArgs )
 
 		X = shaper.conform( X )

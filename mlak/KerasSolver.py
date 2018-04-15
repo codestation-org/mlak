@@ -144,38 +144,39 @@ class TopologyParser( List ):
 	] ) )
 
 class KerasSolver:
-	def __prepare_model( shaper, nnTopology = None, **kwArgs ):
-		with NoWarnings():
-			sampleSize = int( sqrt( shaper.feature_count() ) )
-			topology = list( map( coerce, parse( nnTopology, TopologyParser ) ) ) if nnTopology else []
-			model = Sequential()
-			first = True
-			for l in topology:
+	def __prepare_model( shaper, y, solution = None, nnTopology = None, **kwArgs ):
+		if not solution:
+			with NoWarnings():
+				shaper.learn_labels( y )
+				sampleSize = int( sqrt( shaper.feature_count() ) )
+				topology = list( map( coerce, parse( nnTopology, TopologyParser ) ) ) if nnTopology else []
+				model = Sequential()
+				first = True
+				for l in topology:
+					if first:
+						l.make( model, input_shape = ( sampleSize, sampleSize, 1 ) )
+						first = False
+					else:
+						l.make( model )
 				if first:
-					l.make( model, input_shape = ( sampleSize, sampleSize, 1 ) )
-					first = False
-				else:
-					l.make( model )
-			if first:
-				model.add( Flatten( input_shape = ( sampleSize, sampleSize, 1 ) ) )
-			model.add( Dense( shaper.class_count(), activation = 'softmax' ) )
-			model.compile( loss = 'categorical_crossentropy',
-				optimizer = 'adam',
-				metrics = ['accuracy']
-			)
-
-			return model
+					model.add( Flatten( input_shape = ( sampleSize, sampleSize, 1 ) ) )
+				model.add( Dense( shaper.class_count(), activation = 'softmax' ) )
+				model.compile( loss = 'categorical_crossentropy',
+					optimizer = 'adam',
+					metrics = ['accuracy']
+				)
+				return model
+			return solution.model()
 
 	def type( self_ ):
 		return ma.SolverType.CLASSIFIER
 
-	def train( self_, X, y, iterations = 20, batchSize = 64, kerasArgs = {}, **kwArgs ):
-		shaper = ma.DataShaper( X, **kwArgs )
+	def train( self_, X, y, solution = None, iterations = 20, batchSize = 64, kerasArgs = {}, **kwArgs ):
+		shaper = solution.shaper() if solution else ma.DataShaper( X, **kwArgs )
 		sampleSize = int( sqrt( shaper.feature_count() ) )
-		shaper.learn_labels( y )
+		model = kwArgs.get( "model", KerasSolver.__prepare_model( shaper, y, **kwArgs ) )
 		y = shaper.map_labels( y )
 		y = keras.utils.to_categorical( y, num_classes = shaper.class_count() )
-		model = kwArgs.get( "model", KerasSolver.__prepare_model( shaper, **kwArgs ) )
 		X = shaper.conform( X, addOnes = False )
 		X = X.reshape( X.shape[0], sampleSize, sampleSize, 1 )
 		X = X.astype( 'float32' )

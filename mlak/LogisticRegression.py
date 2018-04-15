@@ -34,17 +34,17 @@ def predict_one_vs_all( X, all_theta ):
 	return np.argmax( np.dot( X, all_theta.T ), axis = 1 )
 
 class LogisticRegressionSolver:
-	def __initial_theta( shaper, y, model = None, **kwArgs ):
-		if model is None:
+	def __initial_theta( shaper, y, solution = None, **kwArgs ):
+		if not solution:
 			shaper.learn_labels( y )
-			model = np.zeros( ( shaper.class_count(), shaper.feature_count() + 1 ) )
-		return model
+			return np.zeros( ( shaper.class_count(), shaper.feature_count() + 1 ) )
+		return solution.model()
 
 	def type( self_ ):
 		return ma.SolverType.CLASSIFIER
 
-	def train( self_, X, y, Lambda = 0, iterations = 50, **kwArgs ):
-		shaper = ma.DataShaper( X, **kwArgs )
+	def train( self_, X, y, solution = None, Lambda = 0, iterations = 50, **kwArgs ):
+		shaper = solution.shaper() if solution else ma.DataShaper( X, **kwArgs )
 		theta = LogisticRegressionSolver.__initial_theta( shaper, y, **kwArgs )
 		y = shaper.map_labels( y )
 		X = shaper.conform( X )

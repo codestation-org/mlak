@@ -292,11 +292,12 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 			dataSet.trainSet.X,
 			dataSet.trainSet.y,
 			iterations = c - oldIterations,
-			model = s.model() if s else None,
+			solution = s,
 			verbose = verbose,
 			debug = debug,
 			**optimizationParams
 		)
+		print( s.shaper() )
 		oldIterations = c
 		errorTrain[i] += solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
 		errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
