@@ -9,6 +9,7 @@ import mlak.LinearAlgebra as la
 import mlak.FeatureTools as ft
 import mlak.Terminal as term
 from mlak.Logger import Logger
+from mlak.utils import stringify
 
 Observations = namedtuple( "Observations", "X y" )
 DataSet = namedtuple( "DataSet", "trainSet crossValidationSet testSet" )
@@ -125,7 +126,7 @@ def find_solution(
 	solver, X, y,
 	showFailureRateTrain = False,
 	optimizationParams = { "dummy" : [ 0 ] },
-	logFileName = "model-analyzer",
+	log = { "log_file_name": "model-analyzer" },
 	verbose = False,
 	debug = False,
 	files = [],
@@ -144,7 +145,7 @@ def find_solution(
 			if len( v ) == 0:
 				v.append( None )
 			values.append( v )
-		print( "{}: {}".format( k, v ) )
+		print( "{}: {}".format( k, stringify( v ) ) )
 
 	profiles = list( product( *values ) )
 
@@ -162,7 +163,7 @@ def find_solution(
 		op.update( kwArgs )
 		for i in range( len( names ) ):
 			op[names[i]] = p[i]
-		print( "testing solution for: {}   ".format( op ) )
+		print( "testing solution for: {}   ".format( stringify( op ) ) )
 		s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, verbose = verbose, debug = debug, **op )
 		if showFailureRateTrain:
 			fr = solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
@@ -174,7 +175,7 @@ def find_solution(
 				"failureRateCV": fr,
 			},
 			files = files,
-			log_file_name = logFileName
+			**log
 		)
 		if fr < failureRate:
 			failureRate = fr

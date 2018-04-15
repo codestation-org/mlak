@@ -69,7 +69,7 @@ def train( args ):
 			]
 		},
 		files = [ args.data_set ],
-		logFileName = "mlak.log",
+		log = { "log_file_name": "mlak.log" },
 		**vars( args )
 	)
 	solution = optimizationResults.solution

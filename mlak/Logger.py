@@ -13,9 +13,11 @@ import time
 import datetime
 import os
 import json
+
 from collections import OrderedDict
 
 import mlak.DataIO as dio
+from mlak.utils import func_to_str, stringify
 
 class Logger:
 
@@ -46,7 +48,6 @@ class Logger:
 		else:
 			dio.append_text_to_file(log_full_path, json)
 
-
 	def get_json(data, files):
 		gitcurrenthash, gitchanges = get_git_hash_and_changes()
 		jsonContent = OrderedDict([
@@ -56,7 +57,7 @@ class Logger:
 					('changes',     gitchanges)
 				])
 			),
-			('data', data),
+			('data', stringify( data )),
 			('files', Logger.get_files_list(files))
 		])
 		return json.dumps(jsonContent).replace('\n', ' \\n ')
@@ -85,3 +86,4 @@ def get_git_hash_and_changes():
 	currenthash = subprocess.check_output(shlex.split('git rev-parse HEAD'))
 	changes = subprocess.check_output(shlex.split('git diff --shortstat'))
 	return (currenthash.decode().replace('\n', ''), changes.decode().replace('\n', ''))
+

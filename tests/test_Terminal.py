@@ -4,12 +4,11 @@ import sys
 sys.path.extend( [ "./mlak" ] )
 
 import unittest
-import io
-import sys
+from mlak.utils import CapturedStdout
 
 from Terminal import *
 
-class TestMathTools( unittest.TestCase ):
+class TestTerminal( unittest.TestCase ):
 	def test_plot( self ):
 		X = np.array( [
 			0,  0,  0,  0,  1,  0,  0,  0,
@@ -21,14 +20,11 @@ class TestMathTools( unittest.TestCase ):
 			0,  5,  1,  0,  0,  1,  4,  0,
 			2,  1,  0,  0,  0,  0,  2,  1
 		] )
-		numerical = io.StringIO()
-		sys.stdout = numerical
-		plot( X, label = "A" )
-		sys.stdout = sys.__stdout__
-		art = io.StringIO()
-		sys.stdout = art
-		plot( X, art = True, label = "A" )
-		sys.stdout = sys.__stdout__
+		with CapturedStdout() as numerical:
+			plot( X, label = "A" )
+		with CapturedStdout() as art:
+			plot( X, art = True, label = "A" )
+
 		numericalExp = """+-------------------------+
 | Label: A                |
 | neutral = 0, range = 18.0|
@@ -67,19 +63,17 @@ class TestMathTools( unittest.TestCase ):
 		self.assertEqual( art, artExp )
 
 	def test_progress( self ):
-		out = io.StringIO()
-		sys.stdout = out
-		p = Progress( 5, "test: " )
-		next( p )
-		next( p )
-		next( p )
-		next( p )
-		next( p )
-		next( p )
-		next( p )
-		next( p )
-		next( p )
-		sys.stdout = sys.__stdout__
+		with CapturedStdout() as out:
+			p = Progress( 5, "test: " )
+			next( p )
+			next( p )
+			next( p )
+			next( p )
+			next( p )
+			next( p )
+			next( p )
+			next( p )
+			next( p )
 		out = out.getvalue()
 		exp = "test:  20.00%             \rtest:  40.00%             \rtest:  60.00%             \rtest:  80.00%             \rtest: 100%             \r\n"
 		self.assertEqual( out, exp )

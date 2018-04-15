@@ -7,6 +7,8 @@ import unittest
 import numpy.testing as npt
 
 from ModelAnalyzer import *
+from tests.data_gen import *
+import LinearRegression as linReg
 import numpy as np
 
 class TestModelAnalyzer( unittest.TestCase ):
@@ -65,6 +67,30 @@ class TestModelAnalyzer( unittest.TestCase ):
 		yd = np.sort( np.concatenate( ( ds.trainSet.y, ds.crossValidationSet.y, ds.testSet.y ) ) )
 		npt.assert_equal( Xd, X )
 		npt.assert_equal( yd, y )
+
+	def test_find_solution( self ):
+		X, y = gen_regression_data()
+		solver = linReg.LinearRegressionSolver()
+		optimizationResults = find_solution(
+			solver, X, y,
+			showFailureRateTrain = True,
+			optimizationParams = {
+				"nnTopology": "",
+				"Lambda": [0.01, 0.1, 1],
+				"functions": [
+					[],
+					[
+						lambda x: x[0] ** 2,
+						lambda x: x[1] ** 2
+					]
+				]
+			},
+			files = [],
+			log = {
+				"log_dir": "out",
+				"log_file_name": "mlak"
+			}
+		)
 
 
 if __name__ == '__main__':
