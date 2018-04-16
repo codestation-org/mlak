@@ -10,7 +10,13 @@ from ModelAnalyzer import *
 from tests.data_gen import *
 from mlak.utils import CapturedStdout
 import LinearRegression as linReg
+import LogisticRegression as logReg
+import NeuralNetwork as nn
+import KerasSolver as ks
 import numpy as np
+import random as rn
+import tensorflow as tf
+
 
 class TestModelAnalyzer( unittest.TestCase ):
 	def test_DataShaper_features( self ):
@@ -99,6 +105,111 @@ class TestModelAnalyzer( unittest.TestCase ):
 				}
 			)
 		self.assertAlmostEqual( optimizationResults.failureRateTest, 1e-07, 6 )
+
+	def test_analyze_linreg( self ):
+		X, y = gen_regression_data()
+		solver = linReg.LinearRegressionSolver()
+		with CapturedStdout():
+			analyzerResults = analyze(
+				solver, X, y,
+				optimizationParams = {
+					"nnTopology": "",
+					"Lambda": 0.1,
+					"functions": [
+						lambda x: x[0] ** 2,
+						lambda x: x[1] ** 2,
+						lambda x: x[2] ** 2
+					]
+				},
+				iterations = 40,
+				bins = 3,
+				tries = 4,
+				sample_iterations = 40
+			)
+		npt.assert_equal( analyzerResults.sampleCountAnalyzis.sampleCount, [2133, 4266, 6400] )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorTrain, [8.25e-05, 2.06e-05, 9.19e-06], 5 )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorCV, [8.28e-05, 2.05e-05, 9.04e-06], 5 )
+		npt.assert_equal( analyzerResults.iterationCountAnalyzis.iterationCount, [13, 26, 40] )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorTrain, [2.25e-06, 2.25e-06, 2.25e-06], 5 )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorCV, [2.28e-06, 2.28e-06, 2.28e-06], 5 )
+
+	def test_analyze_logreg( self ):
+		X, y = gen_logistic_data()
+		solver = logReg.LogisticRegressionSolver()
+		np.random.seed( 0 )
+		rn.seed( 0 )
+		tf.set_random_seed( 0 )
+		with CapturedStdout():
+			analyzerResults = analyze(
+				solver, X, y,
+				optimizationParams = {
+					"nnTopology": "",
+					"Lambda": 1,
+					"functions": None
+				},
+				iterations = 40,
+				bins = 3,
+				tries = 4,
+				sample_iterations = 4
+			)
+		npt.assert_equal( analyzerResults.sampleCountAnalyzis.sampleCount, [500, 1000, 1500] )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorTrain, [0, 0, 0], 2 )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorCV, [0, 0, 0] )
+		npt.assert_equal( analyzerResults.iterationCountAnalyzis.iterationCount, [13, 26, 40] )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorTrain, [0, 0, 0], 5 )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorCV, [0, 0, 0], 5 )
+
+	def test_analyze_neuralnetwork( self ):
+		X, y = gen_logistic_data()
+		solver = nn.NeuralNetworkSolver()
+		np.random.seed( 0 )
+		rn.seed( 0 )
+		tf.set_random_seed( 0 )
+		with CapturedStdout():
+			analyzerResults = analyze(
+				solver, X, y,
+				optimizationParams = {
+					"nnTopology": "10",
+					"Lambda": 1,
+					"functions": None
+				},
+				iterations = 40,
+				bins = 3,
+				tries = 4,
+				sample_iterations = 10
+			)
+		npt.assert_equal( analyzerResults.sampleCountAnalyzis.sampleCount, [500, 1000, 1500] )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorTrain, [0., 0, 0] )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorCV, [0., 0., 0.] )
+		npt.assert_equal( analyzerResults.iterationCountAnalyzis.iterationCount, [13, 26, 40] )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorTrain, [0, 0, 0], 5 )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorCV, [0, 0, 0], 5 )
+
+	def test_analyze_keras( self ):
+		X, y = gen_logistic_data()
+		solver = ks.KerasSolver()
+		np.random.seed( 0 )
+		rn.seed( 0 )
+		tf.set_random_seed( 0 )
+		with CapturedStdout():
+			analyzerResults = analyze(
+				solver, X, y,
+				optimizationParams = {
+					"nnTopology": "N(10)",
+					"Lambda": 1,
+					"functions": None
+				},
+				iterations = 40,
+				bins = 3,
+				tries = 4,
+				sample_iterations = 4
+			)
+		npt.assert_equal( analyzerResults.sampleCountAnalyzis.sampleCount, [500, 1000, 1500] )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorTrain, [0.02, 0, 0], 2 )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorCV, [0.024, 0, 0], 2 )
+		npt.assert_equal( analyzerResults.iterationCountAnalyzis.iterationCount, [13, 26, 40] )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorTrain, [0, 0, 0], 5 )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorCV, [0, 0, 0], 5 )
 
 if __name__ == '__main__':
 	unittest.main()

@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from enum import Enum
+from enum import IntEnum
 from itertools import product
 from collections import namedtuple
 import inspect
@@ -18,7 +18,7 @@ SampleCountAnalyzis = namedtuple( "SampleCountAnalyzis", "sampleCount errorTrain
 IterationCountAnalyzis = namedtuple( "IterationCountAnalyzis", "iterationCount errorTrain errorCV" )
 AnalyzerResult = namedtuple( "AnalyzerResult", "sampleCountAnalyzis iterationCountAnalyzis" )
 
-class SolverType( Enum ):
+class SolverType( IntEnum ):
 	VALUE_PREDICTOR = 1
 	CLASSIFIER = 2
 
@@ -240,13 +240,13 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 		p = term.Progress( bins * tries, "Analyzing model (sample count): " )
 
 	i = 0
-	count = startingSampleCount
-	sampleCount = []
-	errorTrain = []
-	errorCV = []
 	step = m / bins
 	if step < 1:
 		step = 1
+	count = max( startingSampleCount, step )
+	sampleCount = []
+	errorTrain = []
+	errorCV = []
 	while True:
 		c = int( count )
 		sampleCount.append( c )
@@ -262,7 +262,7 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 			if verbose:
 				p.next()
 		i += 1
-		if count > m:
+		if count >= m:
 			break
 		count += step
 	if verbose:
@@ -308,7 +308,7 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 		if verbose:
 			p.next()
 		i += 1
-		if count > iterations:
+		if count >= iterations:
 			break
 		count += step
 	if verbose:

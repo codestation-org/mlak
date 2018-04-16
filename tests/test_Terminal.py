@@ -70,7 +70,6 @@ class TestTerminal( unittest.TestCase ):
 			p.done()
 		out = out.getvalue()
 		exp = "test:  20.00%             \rtest:  40.00%             \rtest:  60.00%             \rtest:  80.00%             \rtest: 100%             \r\n"
-		print( out )
 		self.assertEqual( out, exp )
 
 if __name__ == '__main__':
