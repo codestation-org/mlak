@@ -36,7 +36,7 @@ def compute_grad( X, y, theta, lambda_val ):
 	return grad
 
 class LinearRegressionSolver:
-	def __initial_theta( shaper, solution = None, **kwArgs ):
+	def __initial_theta( shaper, solution, **kwArgs ):
 		return solution.model() if solution else np.zeros( shaper.feature_count() + 1 )
 
 	def type( self_ ):
@@ -44,7 +44,7 @@ class LinearRegressionSolver:
 
 	def train( self_, X, y, solution = None, Lambda = 0, iterations = 50, **kwArgs ):
 		shaper = solution.shaper() if solution else ma.DataShaper( X, **kwArgs )
-		theta = LinearRegressionSolver.__initial_theta( shaper, **kwArgs )
+		theta = LinearRegressionSolver.__initial_theta( shaper, solution, **kwArgs )
 
 		X = shaper.conform( X )
 

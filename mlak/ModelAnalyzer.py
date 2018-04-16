@@ -220,9 +220,9 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 	if tries is None:
 		tries = 10
 
-	step = optimizationParams.pop( "step", None )
-	if step is None:
-		step = 1.5
+	bins = optimizationParams.pop( "bins", None )
+	if bins is None:
+		bins = 10
 
 	sampleIterations = optimizationParams.pop( "sample_iterations", None )
 	if sampleIterations is None:
@@ -230,22 +230,24 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 
 	iterations = optimizationParams.pop( "iterations", None )
 	if iterations is None:
-		iterations = 50
+		iterations = 500
 
 	dataSet = split_data( X, y, testFraction = 0 )
 
 	m = len( dataSet.trainSet.y )
 
 	if verbose:
-		steps = int( math.floor( math.log( m, step ) ) ) if step > 1 else m - 1
-		p = term.Progress( steps, "Analyzing model (sample count): " )
+		p = term.Progress( bins * tries, "Analyzing model (sample count): " )
 
 	i = 0
 	count = startingSampleCount
 	sampleCount = []
 	errorTrain = []
 	errorCV = []
-	while count < m:
+	step = m / bins
+	if step < 1:
+		step = 1
+	while True:
 		c = int( count )
 		sampleCount.append( c )
 		errorTrain.append( 0 )
@@ -257,13 +259,14 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 			s = solver.train( Xt, yt, iterations = sampleIterations, verbose = verbose, debug = debug, **optimizationParams )
 			errorTrain[i] += solver.verify( s, Xt, yt )
 			errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
-		if verbose:
-			next( p )
+			if verbose:
+				p.next()
 		i += 1
-		if step > 1:
-			count *= step
-		else:
-			count += 1
+		if count > m:
+			break
+		count += step
+	if verbose:
+		p.done()
 
 	errorTrain = np.array( errorTrain )
 	errorCV = np.array( errorCV )
@@ -273,17 +276,19 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 	sampleCountAnalyzis = SampleCountAnalyzis( sampleCount = sampleCount, errorTrain = errorTrain, errorCV = errorCV )
 
 	if verbose:
-		steps = int( math.floor( math.log( m, step ) ) ) if step > 1 else m - 1
-		p = term.Progress( steps, "Analyzing model (iteration count): " )
+		p = term.Progress( bins, "Analyzing model (iteration count): " )
 
 	i = 0
-	count = 1
+	step = iterations / bins
+	if step < 1:
+		step = 1
+	count = step
+	oldIterations = 0
 	iterationCount = []
 	errorTrain = []
 	errorCV = []
-	oldIterations = 0
 	s = None
-	while count < iterations:
+	while True:
 		c = int( count )
 		iterationCount.append( c )
 		errorTrain.append( 0 )
@@ -297,17 +302,17 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 			debug = debug,
 			**optimizationParams
 		)
-		print( s.shaper() )
 		oldIterations = c
 		errorTrain[i] += solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
 		errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
 		if verbose:
-			next( p )
+			p.next()
 		i += 1
-		if step > 1:
-			count *= step
-		else:
-			count += 1
+		if count > iterations:
+			break
+		count += step
+	if verbose:
+		p.done()
 
 	errorTrain = np.array( errorTrain )
 	errorCV = np.array( errorCV )

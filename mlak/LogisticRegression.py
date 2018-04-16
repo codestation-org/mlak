@@ -34,7 +34,7 @@ def predict_one_vs_all( X, all_theta ):
 	return np.argmax( np.dot( X, all_theta.T ), axis = 1 )
 
 class LogisticRegressionSolver:
-	def __initial_theta( shaper, y, solution = None, **kwArgs ):
+	def __initial_theta( shaper, y, solution, **kwArgs ):
 		if not solution:
 			shaper.learn_labels( y )
 			return np.zeros( ( shaper.class_count(), shaper.feature_count() + 1 ) )
@@ -45,7 +45,7 @@ class LogisticRegressionSolver:
 
 	def train( self_, X, y, solution = None, Lambda = 0, iterations = 50, **kwArgs ):
 		shaper = solution.shaper() if solution else ma.DataShaper( X, **kwArgs )
-		theta = LogisticRegressionSolver.__initial_theta( shaper, y, **kwArgs )
+		theta = LogisticRegressionSolver.__initial_theta( shaper, y, solution = solution, **kwArgs )
 		y = shaper.map_labels( y )
 		X = shaper.conform( X )
 		for c in range( shaper.class_count() ):

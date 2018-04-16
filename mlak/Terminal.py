@@ -61,18 +61,22 @@ def plot( x_, label = None, art = False, **kwArgs ):
 			print( " |" )
 	print( "+" + "-" * barLen + "+" )
 
-def Progress( n, label = "" ):
-	p = 0
-	op = 0
-	cll = " " * ( len( label ) + 7 ) + "\r"
-	for i in range( n ):
-		p = int( i * 10000 / n )
-		if p != op:
-			print( "{}{:6.2f}%{}".format( label, p / 100, cll ), end = "" )
-			op = p
-		yield
-	print( "{}100%{}".format( label, cll ) )
-	yield
-	while True:
-		yield
+class Progress( object ):
+	def __init__( self_, n_, label_ = "" ):
+		self_._max = n_
+		self_._label = label_
+		self_._cur = 0
+		self_._display = 0
+		self_.cll = " " * ( len( self_._label ) + 7 ) + "\r"
+	def next( self_ ):
+		if self_._cur < self_._max:
+			p = int( self_._cur * 10000 / self_._max )
+			if p != self_._display:
+				print( "{}{:6.2f}%{}".format( self_._label, p / 100, self_.cll ), end = "" )
+				self_._display = p
+			self_._cur += 1
+		else:
+			self_.done( end = "" )
+	def done( self_, end = None ):
+		print( "{}100%{}".format( self_._label, self_.cll ), end = end )
 

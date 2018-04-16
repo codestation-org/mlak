@@ -65,17 +65,12 @@ class TestTerminal( unittest.TestCase ):
 	def test_progress( self ):
 		with CapturedStdout() as out:
 			p = Progress( 5, "test: " )
-			next( p )
-			next( p )
-			next( p )
-			next( p )
-			next( p )
-			next( p )
-			next( p )
-			next( p )
-			next( p )
+			for i in range( 5 ):
+				p.next()
+			p.done()
 		out = out.getvalue()
 		exp = "test:  20.00%             \rtest:  40.00%             \rtest:  60.00%             \rtest:  80.00%             \rtest: 100%             \r\n"
+		print( out )
 		self.assertEqual( out, exp )
 
 if __name__ == '__main__':

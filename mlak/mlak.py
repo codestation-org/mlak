@@ -196,9 +196,9 @@ def main():
 	parserAnalyze.add_argument( "-t", "--topology", metavar = "topo", type = str, help = "NeuralNetwork topology to test." )
 	parserAnalyze.add_argument( "-l", "--Lambda", metavar = "lambda", type = float, required = True, help = "Value of regularization parameter to test." )
 	parserAnalyze.add_argument( "-r", "--tries", metavar = "count", type = int, help = "Average out experiment results over that many retries." )
-	parserAnalyze.add_argument( "-S", "--step", metavar = "factor", type = float, help = "Sample count increment factor." )
-	parserAnalyze.add_argument( "-I", "--sample-iterations", metavar = "num", type = int, help = "Number of iterations in sample count trial." )
+	parserAnalyze.add_argument( "-b", "--bins", metavar = "count", type = int, help = "Split test space into that many intervals." )
 	parserAnalyze.add_argument( "-i", "--iterations", metavar = "num", type = int, help = "Maximum number of iterations." )
+	parserAnalyze.add_argument( "-I", "--sample-iterations", metavar = "num", type = int, help = "Number of iterations in sample count trial." )
 	parserAnalyze.set_defaults( func = analyze )
 
 	parserTest = subparsers.add_parser( "test", help = "Test trained model against given data." )

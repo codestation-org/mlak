@@ -166,7 +166,7 @@ class KerasSolver:
 					metrics = ['accuracy']
 				)
 				return model
-			return solution.model()
+		return solution.model()
 
 	def type( self_ ):
 		return ma.SolverType.CLASSIFIER
@@ -174,7 +174,7 @@ class KerasSolver:
 	def train( self_, X, y, solution = None, iterations = 20, batchSize = 64, kerasArgs = {}, **kwArgs ):
 		shaper = solution.shaper() if solution else ma.DataShaper( X, **kwArgs )
 		sampleSize = int( sqrt( shaper.feature_count() ) )
-		model = kwArgs.get( "model", KerasSolver.__prepare_model( shaper, y, **kwArgs ) )
+		model = kwArgs.get( "model", KerasSolver.__prepare_model( shaper, y, solution, **kwArgs ) )
 		y = shaper.map_labels( y )
 		y = keras.utils.to_categorical( y, num_classes = shaper.class_count() )
 		X = shaper.conform( X, addOnes = False )
