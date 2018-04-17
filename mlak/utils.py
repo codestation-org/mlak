@@ -28,6 +28,16 @@ def func_to_str( f ):
 import types
 from copy import deepcopy
 
+def isnamedtupleinstance(x):
+	t = type( x )
+	b = t.__bases__
+	if ( len( b ) != 1 ) or ( b[0] != tuple ):
+		return False
+	f = getattr( t, '_fields', None )
+	if not isinstance( f, tuple ):
+		return False
+	return all( type( n ) == str for n in f )
+
 def __stringify( data ):
 	if type( data ) == list:
 		for i in range( len( data ) ):
@@ -35,9 +45,26 @@ def __stringify( data ):
 	elif type( data ) == dict:
 		for k in data:
 			data[k] = __stringify( data[k] )
+	elif isnamedtupleinstance( data ):
+		data = data.__class__( *__stringify( list( data ) ) )
 	elif isinstance( data, types.FunctionType ):
 		data = func_to_str( data )
+	else:
+		for m in dir( data ):
+			if m.startswith( "_" ) and not m.startswith( "__" ):
+				setattr( data, m, __stringify( getattr( data, m ) ) )
 	return data
 
 def stringify( data ):
 	return __stringify( deepcopy( data ) )
+
+with NoWarnings():
+	import numpy as np
+	import random as rn
+	import tensorflow as tf
+
+def fix_random():
+	np.random.seed( 0 )
+	rn.seed( 0 )
+	tf.set_random_seed( 0 )
+

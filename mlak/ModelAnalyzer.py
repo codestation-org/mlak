@@ -25,13 +25,17 @@ class SolverType( IntEnum ):
 class DataShaper:
 	def __init__( self_, X, functions = [], **kwArgs ):
 		self_._functions = functions
-		if self_._functions is None:
+		if self_._functions:
+			for i in range( len( self_._functions ) ):
+				if type( self_._functions[i] ) != str:
+					self_._functions[i] = stringify( self_._functions[i] )
+		else:
 			self_._functions = []
 		self_._featureCount = np.size( X, axis = 1 ) + len( self_._functions )
 		self_._classesIdToLabel = None
 		self_._classesLabelToId = None
 
-		X = ft.add_features( X, self_._functions )
+		X = ft.add_features( X, self_.__functions() )
 		self_._mu, self_._sigma = ft.find_normalization_params( X )
 
 	def learn_labels( self_, y ):
@@ -51,7 +55,7 @@ class DataShaper:
 		return y
 
 	def conform( self_, X, addOnes = True, **kwArgs ):
-		X = ft.add_features( X, self_._functions )
+		X = ft.add_features( X, self_.__functions() )
 		X = ft.normalize_features( X, self_._mu, self_._sigma )
 		if addOnes:
 			X = la.add_ones_column( X )
@@ -77,17 +81,24 @@ class DataShaper:
 		return True if self_._classesIdToLabel is not None else False
 
 	def __functions( self_ ):
-		return ", ".join( map( inspect.getsource, self_._functions ) )
+		func = []
+		for f in self_._functions:
+			if type( f ) == str:
+				f = eval( f )
+				if type( f ) == tuple:
+					f = f[0]
+			func.append( f )
+		return func
 
 	def __repr__( self_ ):
 		return "Shaper( mu = {}, sigma = {}, classesIdToLabel = {}, functions = [{}] )".format(
-			self_._mu, self_._sigma, self_._classesIdToLabel, self_.__functions()
+			self_._mu, self_._sigma, self_._classesIdToLabel, stringify( self_._functions )
 		)
 
 class Solution:
-	def __init__( self_, **kwArgs ):
-		self_._model = kwArgs.get( "model", 0 )
-		self_._shaper =  kwArgs.get( "shaper", None )
+	def __init__( self_, model = 0, shaper = None ):
+		self_._model = model
+		self_._shaper = shaper
 	def set( self_, **kwArgs ):
 		if "model" in kwArgs:
 			self_._model = kwArgs.get( "model" )

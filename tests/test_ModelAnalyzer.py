@@ -8,24 +8,26 @@ import numpy.testing as npt
 
 from ModelAnalyzer import *
 from tests.data_gen import *
-from mlak.utils import CapturedStdout
+from mlak.utils import CapturedStdout, fix_random
 import LinearRegression as linReg
 import LogisticRegression as logReg
 import NeuralNetwork as nn
 import KerasSolver as ks
 import numpy as np
-import random as rn
-import tensorflow as tf
 
 
 class TestModelAnalyzer( unittest.TestCase ):
+	def setUp( self ):
+		fix_random()
 	def test_DataShaper_features( self ):
 		X = np.array( [[1, 2, 3], [1.5, 4, 9], [1.7, 10, 100]] )
 		ds = DataShaper( X, None )
 		self.assertEqual( ds.feature_count(), 3 )
 		npt.assert_almost_equal( ds.mu(), np.array( [ 1.4, 5.333333333333, 37.333333333333] ) )
 		npt.assert_almost_equal( ds.sigma(), np.array( [ 0.294392, 3.399346342395, 44.379675027602] ) )
-		ds = DataShaper( X, [lambda x : x[1] * x[2]] )
+		ds = DataShaper( X, [
+			lambda x : x[1] * x[2]
+		] )
 		self.assertEqual( ds.is_classifier(), False )
 		self.assertEqual( ds.feature_count(), 4 )
 		npt.assert_almost_equal( ds.mu(), np.array( [ 1.4, 5.333333333333, 37.333333333333, 347.3333333] ) )
@@ -136,9 +138,6 @@ class TestModelAnalyzer( unittest.TestCase ):
 	def test_analyze_logreg( self ):
 		X, y = gen_logistic_data()
 		solver = logReg.LogisticRegressionSolver()
-		np.random.seed( 0 )
-		rn.seed( 0 )
-		tf.set_random_seed( 0 )
 		with CapturedStdout():
 			analyzerResults = analyze(
 				solver, X, y,
@@ -162,9 +161,6 @@ class TestModelAnalyzer( unittest.TestCase ):
 	def test_analyze_neuralnetwork( self ):
 		X, y = gen_logistic_data()
 		solver = nn.NeuralNetworkSolver()
-		np.random.seed( 0 )
-		rn.seed( 0 )
-		tf.set_random_seed( 0 )
 		with CapturedStdout():
 			analyzerResults = analyze(
 				solver, X, y,
@@ -188,9 +184,6 @@ class TestModelAnalyzer( unittest.TestCase ):
 	def test_analyze_keras( self ):
 		X, y = gen_logistic_data()
 		solver = ks.KerasSolver()
-		np.random.seed( 0 )
-		rn.seed( 0 )
-		tf.set_random_seed( 0 )
 		with CapturedStdout():
 			analyzerResults = analyze(
 				solver, X, y,

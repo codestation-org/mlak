@@ -10,6 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 
+import mlak.utils as mu
+
 import mlak.LinearRegression as linReg
 import mlak.LogisticRegression as logReg
 import mlak.NeuralNetwork as nn
@@ -53,7 +55,6 @@ def create( args ):
 
 def train( args ):
 	solver = preferredEngine()
-	topology = args.topology
 	Lambda = list( map( float, args.Lambda.split( "," ) ) )
 	rawData = dio.load( args.data_set )
 	X_orig = rawData["X"]
@@ -63,10 +64,8 @@ def train( args ):
 		solver, X_orig, y_orig,
 		showFailureRateTrain = True,
 		optimizationParams = {
-			"nnTopology": topology,
-			"Lambda": Lambda,
-			"functions": [
-			]
+			"nnTopology": args.topology,
+			"Lambda": Lambda
 		},
 		files = [ args.data_set ],
 		log = { "log_file_name": "mlak.log" },
@@ -76,7 +75,7 @@ def train( args ):
 	dio.save( args.solution, solution )
 	if args.debug:
 		print( "solution = {}".format( solution ) )
-	if solution.shaper().is_classifier():
+	if args.verbose and solution.shaper().is_classifier():
 		for i in range( len( y_orig ) ):
 			if not predict( solver, solution, X_orig, y_orig, i ):
 				return
@@ -128,9 +127,11 @@ def test( args ):
 	rawData = dio.load( args.data_set )
 	X_orig = rawData["X"]
 	y_orig = rawData["y"]
-	for i in range( len( y_orig ) ):
-		if not predict( solver, solution, X_orig, y_orig, i ):
-			return
+	print( solver.verify( solution, X_orig, y_orig ) )
+	if args.verbose and solution.shaper().is_classifier():
+		for i in range( len( y_orig ) ):
+			if not predict( solver, solution, X_orig, y_orig, i ):
+				return
 
 def show( args ):
 	solver = preferredEngine()
