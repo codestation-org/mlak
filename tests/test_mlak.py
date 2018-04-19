@@ -82,7 +82,7 @@ class TestMLAK( unittest.TestCase ):
 		mlak.set_preferred_engine( args.engine )
 		with CapturedStdout() as out:
 			mlak.test( args )
-		self.assertEqual( out.getvalue(), "7.117094744250965e-06\n" )
+		self.assertAlmostEqual( float( out.getvalue() ), 7.117094744250965e-06 )
 
 	def test_logreg_10_train( self ):
 		X, y = gen_logistic_data()

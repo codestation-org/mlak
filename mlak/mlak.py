@@ -38,7 +38,7 @@ def set_preferred_engine( engine ):
 		raise Exception( "Bad engine!" )
 	return engine
 
-def predict( solver, solution, X, y, n ):
+def predict( solver, solution, X, y, n ): # pragma: no cover
 	x = X[n]
 	y = y[n]
 	yp = solver.predict( solution, np.array( [ x ] ) )[0]
@@ -47,7 +47,7 @@ def predict( solver, solution, X, y, n ):
 		return input( "Press `Enter` to continue or `q` followed by `Enter` to quit: " ) != "q"
 	return True
 
-def create( args ):
+def create( args ): # pragma: no cover
 	labels = list( args.classes.split( "," ) )
 	lifeDemo = visual.DrawingPad( labels = labels, repeat = args.samples, size = args.size )
 	lifeDemo.run()
@@ -75,12 +75,12 @@ def train( args ):
 	dio.save( args.solution, solution )
 	if args.debug:
 		print( "solution = {}".format( solution ) )
-	if args.verbose and solution.shaper().is_classifier():
+	if args.verbose and solution.shaper().is_classifier(): # pragma: no cover
 		for i in range( len( y_orig ) ):
 			if not predict( solver, solution, X_orig, y_orig, i ):
 				return
 
-def analyze( args ):
+def analyze( args ): # pragma: no cover
 	solver = preferredEngine()
 	rawData = dio.load( args.data_set )
 	X_orig = rawData["X"]
@@ -128,12 +128,12 @@ def test( args ):
 	X_orig = rawData["X"]
 	y_orig = rawData["y"]
 	print( solver.verify( solution, X_orig, y_orig ) )
-	if args.verbose and solution.shaper().is_classifier():
+	if args.verbose and solution.shaper().is_classifier(): # pragma: no cover
 		for i in range( len( y_orig ) ):
 			if not predict( solver, solution, X_orig, y_orig, i ):
 				return
 
-def show( args ):
+def show( args ): # pragma: no cover
 	solver = preferredEngine()
 	solution = None
 	yp = None
@@ -149,13 +149,13 @@ def show( args ):
 	se = visual.SampleEditor( X_orig, y_orig, zoom = args.zoom, yPredict = yp )
 	se.run()
 
-def live( args ):
+def live( args ): # pragma: no cover
 	solver = preferredEngine()
 	solution = dio.load( args.solution )
 	lifeDemo = visual.DrawingPad( solver = solver, solution = solution, speech = args.speech )
 	lifeDemo.run()
 
-def main():
+def main(): # pragma: no cover
 	parser = argparse.ArgumentParser(
 		description = "Machine Learning Army Knife - an experimentation tool\n"
 			"\n"
@@ -237,7 +237,7 @@ def main():
 	args.func( args )
 	return
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
 	try:
 		main()
 	except Exception:

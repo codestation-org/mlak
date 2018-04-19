@@ -247,7 +247,7 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 
 	m = len( dataSet.trainSet.y )
 
-	if verbose:
+	if verbose: # pragma: no cover
 		p = term.Progress( bins * tries, "Analyzing model (sample count): " )
 
 	i = 0
@@ -270,13 +270,13 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 			s = solver.train( Xt, yt, iterations = sampleIterations, verbose = verbose, debug = debug, **optimizationParams )
 			errorTrain[i] += solver.verify( s, Xt, yt )
 			errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
-			if verbose:
+			if verbose: # pragma: no cover
 				p.next()
 		i += 1
 		if count >= m:
 			break
 		count += step
-	if verbose:
+	if verbose: # pragma: no cover
 		p.done()
 
 	errorTrain = np.array( errorTrain )
@@ -286,7 +286,7 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 
 	sampleCountAnalyzis = SampleCountAnalyzis( sampleCount = sampleCount, errorTrain = errorTrain, errorCV = errorCV )
 
-	if verbose:
+	if verbose: # pragma: no cover
 		p = term.Progress( bins, "Analyzing model (iteration count): " )
 
 	i = 0
@@ -316,13 +316,13 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 		oldIterations = c
 		errorTrain[i] += solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
 		errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
-		if verbose:
+		if verbose: # pragma: no cover
 			p.next()
 		i += 1
 		if count >= iterations:
 			break
 		count += step
-	if verbose:
+	if verbose: # pragma: no cover
 		p.done()
 
 	errorTrain = np.array( errorTrain )

@@ -51,7 +51,7 @@ def compute_cost( theta, *args ):
 		r += np.sum( t[:,1:] ** 2 )
 	cost /= m
 	cost += Lambda * r / ( m * 2 )
-	if debug:
+	if debug: # pragma: no cover
 		print( "cost = {}                                \r".format( cost ), end = "" )
 	return cost
 
