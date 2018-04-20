@@ -9,7 +9,7 @@ import mlak.LinearAlgebra as la
 import mlak.FeatureTools as ft
 import mlak.Terminal as term
 from mlak.Logger import Logger
-from mlak.utils import stringify
+import mlak.utils as mu
 
 Observations = namedtuple( "Observations", "X y" )
 DataSet = namedtuple( "DataSet", "trainSet crossValidationSet testSet" )
@@ -28,7 +28,7 @@ class DataShaper:
 		if self_._functions:
 			for i in range( len( self_._functions ) ):
 				if type( self_._functions[i] ) != str:
-					self_._functions[i] = stringify( self_._functions[i] )
+					self_._functions[i] = mu.func_to_str( self_._functions[i] )
 		else:
 			self_._functions = []
 		self_._featureCount = np.size( X, axis = 1 ) + len( self_._functions )
@@ -92,7 +92,7 @@ class DataShaper:
 
 	def __repr__( self_ ):
 		return "Shaper( mu = {}, sigma = {}, classesIdToLabel = {}, functions = [{}] )".format(
-			self_._mu, self_._sigma, self_._classesIdToLabel, stringify( self_._functions )
+			self_._mu, self_._sigma, self_._classesIdToLabel, self_._functions
 		)
 
 class Solution:
@@ -156,7 +156,7 @@ def find_solution(
 			if len( v ) == 0:
 				v.append( None )
 			values.append( v )
-		print( "{}: {}".format( k, stringify( v ) ) )
+		print( "{}: {}".format( k, v ) )
 
 	profiles = list( product( *values ) )
 
@@ -174,7 +174,7 @@ def find_solution(
 		op.update( kwArgs )
 		for i in range( len( names ) ):
 			op[names[i]] = p[i]
-		print( "testing solution for: {}   ".format( stringify( op ) ) )
+		print( "testing solution for: {}   ".format( op ) )
 		s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, verbose = verbose, debug = debug, **op )
 		if showFailureRateTrain:
 			fr = solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
@@ -231,9 +231,9 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 	if tries is None:
 		tries = 10
 
-	bins = optimizationParams.pop( "bins", None )
-	if bins is None:
-		bins = 10
+	binCount = optimizationParams.pop( "bins", None )
+	if binCount is None:
+		binCount = 10
 
 	sampleIterations = optimizationParams.pop( "sample_iterations", None )
 	if sampleIterations is None:
@@ -247,19 +247,14 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 
 	m = len( dataSet.trainSet.y )
 
+	bins = list( filter( lambda x: x >= startingSampleCount, mu.bins( binCount, m ) ) )
 	if verbose: # pragma: no cover
-		p = term.Progress( bins * tries, "Analyzing model (sample count): " )
+		p = term.Progress( len( bins ) * tries, "Analyzing model (sample count): " )
 
-	i = 0
-	step = m / bins
-	if step < 1:
-		step = 1
-	count = max( startingSampleCount, step )
 	sampleCount = []
 	errorTrain = []
 	errorCV = []
-	while True:
-		c = int( count )
+	for i, c in enumerate( bins ):
 		sampleCount.append( c )
 		errorTrain.append( 0 )
 		errorCV.append( 0 )
@@ -272,10 +267,6 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 			errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
 			if verbose: # pragma: no cover
 				p.next()
-		i += 1
-		if count >= m:
-			break
-		count += step
 	if verbose: # pragma: no cover
 		p.done()
 
@@ -286,21 +277,16 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 
 	sampleCountAnalyzis = SampleCountAnalyzis( sampleCount = sampleCount, errorTrain = errorTrain, errorCV = errorCV )
 
+	bins = mu.bins( binCount, iterations )
 	if verbose: # pragma: no cover
-		p = term.Progress( bins, "Analyzing model (iteration count): " )
+		p = term.Progress( len( bins ), "Analyzing model (iteration count): " )
 
-	i = 0
-	step = iterations / bins
-	if step < 1:
-		step = 1
-	count = step
 	oldIterations = 0
 	iterationCount = []
 	errorTrain = []
 	errorCV = []
 	s = None
-	while True:
-		c = int( count )
+	for i, c in enumerate( bins ):
 		iterationCount.append( c )
 		errorTrain.append( 0 )
 		errorCV.append( 0 )
@@ -318,10 +304,6 @@ def analyze( solver, X, y, verbose = False, debug = False, **kwArgs ):
 		errorCV[i] += solver.verify( s, dataSet.crossValidationSet.X, dataSet.crossValidationSet.y )
 		if verbose: # pragma: no cover
 			p.next()
-		i += 1
-		if count >= iterations:
-			break
-		count += step
 	if verbose: # pragma: no cover
 		p.done()
 

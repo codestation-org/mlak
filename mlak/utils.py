@@ -1,3 +1,13 @@
+def bins( count, top ):
+	step = top // count
+	b = list( range( top, 0, -step ) )[::-1]
+	while ( b[0] > count ) or ( ( len( b ) > 1 ) and ( ( b[1] - b[0] ) > count ) ):
+		if b[0] > count:
+			b = bins( count, b[0] ) + b
+		else:
+			b = bins( count, b[1] ) + b[1:]
+	return sorted( list( set( b ) ) )
+
 import warnings
 
 class NoWarnings( object ):
@@ -25,45 +35,22 @@ import inspect
 def func_to_str( f ):
 	return inspect.getsource( f ).replace( "\t", "" ).replace( "\n", "" )
 
-import types
-from copy import deepcopy
-
-def isnamedtupleinstance(x):
-	t = type( x )
-	b = t.__bases__
-	if ( len( b ) != 1 ) or ( b[0] != tuple ):
-		return False
-	f = getattr( t, '_fields', None )
-	if not isinstance( f, tuple ):
-		return False
-	return all( type( n ) == str for n in f )
-
-def __stringify( data ):
-	if type( data ) == list:
-		for i in range( len( data ) ):
-			data[i] = __stringify( data[i] )
-	elif type( data ) == dict:
-		for k in data:
-			data[k] = __stringify( data[k] )
-	elif isnamedtupleinstance( data ):
-		data = data.__class__( *__stringify( list( data ) ) )
-	elif isinstance( data, types.FunctionType ):
-		data = func_to_str( data )
-	else:
-		for m in dir( data ):
-			if m.startswith( "_" ) and not m.startswith( "__" ):
-				setattr( data, m, __stringify( getattr( data, m ) ) )
-	return data
-
-def stringify( data ):
-	return __stringify( deepcopy( data ) )
-
 with NoWarnings():
 	import numpy as np
 	import random as rn
 	import tensorflow as tf
 
+import os
+
 def fix_random():
+	np.random.seed( 0 )
+	rn.seed( 0 )
+	tf.set_random_seed( 0 )
+	os.environ['PYTHONHASHSEED'] = '0'
+	sessionConf = tf.ConfigProto( intra_op_parallelism_threads = 1, inter_op_parallelism_threads = 1, allow_soft_placement = True, device_count = { 'CPU': 1 } )
+	from keras import backend as K
+	sess = tf.Session( graph = tf.get_default_graph(), config = sessionConf )
+	K.set_session( sess )
 	np.random.seed( 0 )
 	rn.seed( 0 )
 	tf.set_random_seed( 0 )

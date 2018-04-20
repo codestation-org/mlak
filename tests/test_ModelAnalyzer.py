@@ -43,7 +43,7 @@ class TestModelAnalyzer( unittest.TestCase ):
 
 	def test_DataShaper_labels( self ):
 		X = np.array( [[0], [1], [2], [2.5], [1.3], [1.7], [0.1], [0.3], [0.7] ] )
-		y = [ "a", "b", "c", "c", "b", "b" , "a", "a", "a" ]
+		y = [ "a", "b", "c", "c", "b", "b", "a", "a", "a" ]
 		ds = DataShaper( X )
 		self.assertEqual( ds.feature_count(), 1 )
 		self.assertEqual( ds.is_classifier(), False )
@@ -128,12 +128,28 @@ class TestModelAnalyzer( unittest.TestCase ):
 				tries = 4,
 				sample_iterations = 40
 			)
-		npt.assert_equal( analyzerResults.sampleCountAnalyzis.sampleCount, [2133, 4266, 6400] )
-		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorTrain, [8.25e-05, 2.06e-05, 9.19e-06], 5 )
-		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorCV, [8.28e-05, 2.05e-05, 9.04e-06], 5 )
-		npt.assert_equal( analyzerResults.iterationCountAnalyzis.iterationCount, [13, 26, 40] )
-		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorTrain, [2.25e-06, 2.25e-06, 2.25e-06], 5 )
-		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorCV, [2.28e-06, 2.28e-06, 2.28e-06], 5 )
+		npt.assert_equal( analyzerResults.sampleCountAnalyzis.sampleCount, [1, 4, 7, 10, 19, 28, 54, 80, 159, 238, 475, 712, 1423, 2134, 4267, 6400] )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorTrain, [
+			0.00000000e+00, 2.33847837e+01, 3.00222512e+01, 7.96243961e+00,
+			1.37056787e+00, 5.14152946e-01, 1.26362331e-01, 6.45051925e-02,
+			1.46205243e-02, 7.25704802e-03, 1.67555343e-03, 7.51420424e-04,
+			1.82472270e-04, 8.16512666e-05, 2.04713359e-05, 9.08089772e-06
+		], 5 )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorCV, [
+			4.99885725e+04, 1.75878006e+04, 4.13273401e+03, 4.01030109e+01,
+			3.82169238e+00, 6.81074172e-01, 1.43006176e-01, 7.01556101e-02,
+			1.44597141e-02, 8.57240292e-03, 1.67551231e-03, 7.42103605e-04,
+			1.73911141e-04, 7.83993282e-05, 1.98093851e-05, 8.65960541e-06
+		], 4 )
+		npt.assert_equal( analyzerResults.iterationCountAnalyzis.iterationCount, [2, 4, 6, 10, 14, 27, 40] )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorTrain, [
+			2.18325422e-01, 1.04552670e-05, 2.27461723e-06, 2.27461723e-06,
+			2.27461723e-06, 2.27461723e-06, 2.27461723e-06
+		], 5 )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorCV, [
+			2.14481838e-01, 1.01920583e-05, 2.16874107e-06, 2.16874107e-06,
+			2.16874107e-06, 2.16874107e-06, 2.16874107e-06
+		], 5 )
 
 	def test_analyze_logreg( self ):
 		X, y = gen_logistic_data()
@@ -151,12 +167,12 @@ class TestModelAnalyzer( unittest.TestCase ):
 				tries = 4,
 				sample_iterations = 4
 			)
-		npt.assert_equal( analyzerResults.sampleCountAnalyzis.sampleCount, [500, 1000, 1500] )
-		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorTrain, [0, 0, 0], 2 )
-		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorCV, [0, 0, 0] )
-		npt.assert_equal( analyzerResults.iterationCountAnalyzis.iterationCount, [13, 26, 40] )
-		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorTrain, [0, 0, 0], 5 )
-		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorCV, [0, 0, 0], 5 )
+		npt.assert_equal( analyzerResults.sampleCountAnalyzis.sampleCount, [4, 6, 8, 14, 20, 38, 56, 112, 168, 334, 500, 1000, 1500] )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorTrain, [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.], 2 )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorCV, [0.0646667, 0.104, 0.1846667, 0.0126667, 0.0166667, 0.0053333, 0.0006667, 0.0006667, 0., 0.0006667, 0., 0., 0.] )
+		npt.assert_equal( analyzerResults.iterationCountAnalyzis.iterationCount, [2, 4, 6, 10, 14, 27, 40] )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorTrain, [0., 0.0005, 0., 0., 0., 0., 0.], 5 )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorCV, [0, 0, 0, 0, 0, 0, 0], 5 )
 
 	def test_analyze_neuralnetwork( self ):
 		X, y = gen_logistic_data()
@@ -174,12 +190,12 @@ class TestModelAnalyzer( unittest.TestCase ):
 				tries = 4,
 				sample_iterations = 10
 			)
-		npt.assert_equal( analyzerResults.sampleCountAnalyzis.sampleCount, [500, 1000, 1500] )
-		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorTrain, [0., 0, 0] )
-		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorCV, [0., 0., 0.] )
-		npt.assert_equal( analyzerResults.iterationCountAnalyzis.iterationCount, [13, 26, 40] )
-		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorTrain, [0, 0, 0], 5 )
-		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorCV, [0, 0, 0], 5 )
+		npt.assert_equal( analyzerResults.sampleCountAnalyzis.sampleCount, [4, 6, 8, 14, 20, 38, 56, 112, 168, 334, 500, 1000, 1500] )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorTrain, [0., 0.08, 0.03, 0., 0.04, 0., 0., 0., 0., 0., 0., 0., 0.], 2 )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorCV, [0.3426667, 0.3333333, 0.3, 0.0206667, 0.0886667, 0.004, 0., 0.0013333, 0., 0., 0., 0., 0.] )
+		npt.assert_equal( analyzerResults.iterationCountAnalyzis.iterationCount, [2, 4, 6, 10, 14, 27, 40] )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorTrain, [0.0135, 0.00083, 0., 0., 0., 0., 0.], 5 )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorCV, [0.012, 0.00133, 0., 0., 0., 0., 0.], 5 )
 
 	def test_analyze_keras( self ):
 		X, y = gen_logistic_data()
@@ -197,12 +213,12 @@ class TestModelAnalyzer( unittest.TestCase ):
 				tries = 4,
 				sample_iterations = 4
 			)
-		npt.assert_equal( analyzerResults.sampleCountAnalyzis.sampleCount, [500, 1000, 1500] )
-		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorTrain, [0.02, 0, 0], 2 )
-		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorCV, [0.024, 0, 0], 2 )
-		npt.assert_equal( analyzerResults.iterationCountAnalyzis.iterationCount, [13, 26, 40] )
-		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorTrain, [0, 0, 0], 5 )
-		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorCV, [0, 0, 0], 5 )
+		npt.assert_equal( analyzerResults.sampleCountAnalyzis.sampleCount, [4, 6, 8, 14, 20, 38, 56, 112, 168, 334, 500, 1000, 1500] )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorTrain, [0.19, 0.46, 0.34, 0.18, 0.31, 0.3, 0.45, 0.21, 0.13, 0.03, 0.02, 0., 0.], 0 )
+		npt.assert_almost_equal( analyzerResults.sampleCountAnalyzis.errorCV, [0.48, 0.51, 0.27, 0.25, 0.4, 0.26, 0.46, 0.23, 0.13, 0.04, 0.02, 0., 0.], 0 )
+		npt.assert_equal( analyzerResults.iterationCountAnalyzis.iterationCount, [2, 4, 6, 10, 14, 27, 40] )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorTrain, [0., 0., 0., 0., 0., 0., 0.], 5 )
+		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorCV, [0., 0., 0., 0., 0., 0., 0.], 5 )
 
 if __name__ == '__main__':
 	unittest.main()

@@ -17,7 +17,6 @@ import json
 from collections import OrderedDict
 
 import mlak.DataIO as dio
-from mlak.utils import func_to_str, stringify
 
 class Logger:
 
@@ -57,7 +56,7 @@ class Logger:
 					('changes',     gitchanges)
 				])
 			),
-			('data', stringify( data )),
+			('data', data),
 			('files', Logger.get_files_list(files))
 		])
 		return json.dumps(jsonContent).replace('\n', ' \\n ')
