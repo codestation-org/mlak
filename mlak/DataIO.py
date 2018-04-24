@@ -1,6 +1,7 @@
 import os
 import pickle
 import numpy as np
+from io import StringIO
 import scipy.io as scipy_io
 import hashlib
 
@@ -17,10 +18,8 @@ def load( path_ ):
 		with open( path_, 'rb' ) as f:
 			data = pickle.load( f )
 	elif ext == "txt":
-		dataRaw = np.genfromtxt( path_, delimiter = "," )
-		n = dataRaw.shape[1] - 1
-		data["X"] = dataRaw[:,0:n]
-		data["y"] = dataRaw[:,n:n + 1]
+		data["X"] = np.genfromtxt( path_, delimiter = "," )[:,:-1]
+		data["y"] = np.genfromtxt( path_, dtype = str, usecols = -1, autostrip = True, delimiter = "," )
 	elif ext == "mat":
 		data = scipy_io.loadmat( path_ )
 	else:
