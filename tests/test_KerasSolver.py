@@ -30,7 +30,7 @@ def desc( conf, debug = False ):
 		elif cn == "Dense":
 			d += ":" + "({}, {})".format( c['units'], c['activation'] )
 		elif cn == "Conv2D":
-			d += ":" + "({}, {})".format( c["filters"], c["kernel_size"] )
+			d += ":" + "({}, {}, {})".format( c["filters"], c["kernel_size"], c["padding"] )
 		elif cn == "Dropout":
 			d += ":" + str( c["rate"] )
 		elif cn == "MaxPooling2D":
@@ -45,13 +45,15 @@ class TestKerasSolver( unittest.TestCase ):
 		model = KerasSolver._KerasSolver__prepare_model( shaper, self.y, nnTopology = "N(10)" )
 		self.assertEqual( desc( model.get_config() ), "Flatten:(None, 16, 16, 1) Dense:(10, linear) Dense:(3, softmax)" )
 		model = KerasSolver._KerasSolver__prepare_model( shaper, self.y, nnTopology = "C(4, 2, 2),N(8)" )
-		self.assertEqual( desc( model.get_config() ), "Conv2D:(4, (2, 2)) Flatten Dense:(8, linear) Dense:(3, softmax)" )
-		model = KerasSolver._KerasSolver__prepare_model( shaper, self.y, nnTopology = "C(4, 2, 2),D(0.5),N(8)" )
-		self.assertEqual( desc( model.get_config() ), "Conv2D:(4, (2, 2)) Dropout:0.5 Flatten Dense:(8, linear) Dense:(3, softmax)" )
+		self.assertEqual( desc( model.get_config() ), "Conv2D:(4, (2, 2), valid) Flatten Dense:(8, linear) Dense:(3, softmax)" )
+		model = KerasSolver._KerasSolver__prepare_model( shaper, self.y, nnTopology = "C(4, 2, 2, padding=same),D(0.5),N(8)" )
+		self.assertEqual( desc( model.get_config() ), "Conv2D:(4, (2, 2), same) Dropout:0.5 Flatten Dense:(8, linear) Dense:(3, softmax)" )
 		model = KerasSolver._KerasSolver__prepare_model( shaper, self.y, nnTopology = "C(4, 2, 2),MP(2,2),D(0.5),N(8,activation=relu)" )
-		self.assertEqual( desc( model.get_config() ), "Conv2D:(4, (2, 2)) MaxPooling2D:(2, 2) Dropout:0.5 Flatten Dense:(8, relu) Dense:(3, softmax)" )
+		self.assertEqual( desc( model.get_config() ), "Conv2D:(4, (2, 2), valid) MaxPooling2D:(2, 2) Dropout:0.5 Flatten Dense:(8, relu) Dense:(3, softmax)" )
 		model = KerasSolver._KerasSolver__prepare_model( shaper, self.y, nnTopology = "C(4, 2, 2),MP(2,2),D(0.5),F,N(8)" )
-		self.assertEqual( desc( model.get_config() ), "Conv2D:(4, (2, 2)) MaxPooling2D:(2, 2) Dropout:0.5 Flatten Dense:(8, linear) Dense:(3, softmax)" )
+		self.assertEqual( desc( model.get_config() ), "Conv2D:(4, (2, 2), valid) MaxPooling2D:(2, 2) Dropout:0.5 Flatten Dense:(8, linear) Dense:(3, softmax)" )
+		model = KerasSolver._KerasSolver__prepare_model( shaper, self.y, nnTopology = "N(10,activation=relu),N(8, activation=softmax)" )
+		self.assertEqual( desc( model.get_config() ), "Flatten:(None, 16, 16, 1) Dense:(10, relu) Dense:(8, softmax) Dense:(3, softmax)" )
 		model = KerasSolver._KerasSolver__prepare_model( shaper, self.y, nnTopology = "" )
 		self.assertEqual( desc( model.get_config() ), "Flatten:(None, 16, 16, 1) Dense:(3, softmax)" )
 

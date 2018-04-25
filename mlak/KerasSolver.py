@@ -122,7 +122,8 @@ class DenseParser:
 	args = ( Integer, ), ( Text, )
 	grammar = [ K( "Dense" ), K( "N" ) ], params( *args )
 	def make( self_, model, **kwArgs ):
-		if not model.layers or type( model.layers[-1] ) != Flatten:
+		t = type( model.layers[-1] ) if model.layers else None
+		if not model.layers or ( ( t != Flatten ) and ( t != Dense ) ):
 			model.add( Flatten( **kwArgs ) )
 		kwArgs.pop( "input_shape", None )
 		if hasattr( self_, "kwArgs" ):
