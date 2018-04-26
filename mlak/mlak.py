@@ -57,11 +57,17 @@ def train( args ):
 	solver = preferredEngine()
 	Lambda = list( map( float, args.Lambda.split( "," ) ) )
 	rawData = dio.load( args.data_set )
+	solution = None
+	try:
+		solution = dio.load( args.solution )
+	except:
+		pass
 	X_orig = rawData["X"]
 	y_orig = rawData["y"]
 	args.engine = solver.__class__.__name__
 	optimizationResults = ma.find_solution(
 		solver, X_orig, y_orig,
+		solutionInit = solution,
 		showFailureRateTrain = True,
 		optimizationParams = {
 			"nnTopology": args.topology,

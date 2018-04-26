@@ -3,6 +3,7 @@ import math
 from enum import IntEnum
 from itertools import product
 from collections import namedtuple
+from copy import deepcopy
 import inspect
 
 import mlak.LinearAlgebra as la
@@ -145,6 +146,7 @@ def split_data( X, y, cvFraction = 0.2, testFraction = 0.2, **kwArgs ):
 
 def find_solution(
 	solver, X, y,
+	solutionInit = None,
 	showFailureRateTrain = False,
 	optimizationParams = { "dummy" : [ 0 ] },
 	log = { "log_file_name": "model-analyzer" },
@@ -185,7 +187,7 @@ def find_solution(
 		for i in range( len( names ) ):
 			op[names[i]] = p[i]
 		print( "testing solution for: {}   ".format( op ) )
-		s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, verbose = verbose, debug = debug, **op )
+		s = solver.train( dataSet.trainSet.X, dataSet.trainSet.y, deepcopy( solutionInit ), verbose = verbose, debug = debug, **op )
 		if showFailureRateTrain:
 			fr = solver.verify( s, dataSet.trainSet.X, dataSet.trainSet.y )
 			print( "failureRateTrain = {}         ".format( fr ) )
