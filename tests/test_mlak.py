@@ -48,6 +48,19 @@ class Args( dict ):
 class TestMLAK( unittest.TestCase ):
 	def setUp( self ):
 		fix_random()
+
+	def test_set_preferred_engine( self ):
+		mlak.set_preferred_engine( "linreg" )
+		self.assertEqual( type( mlak.preferredEngine ), type( linReg.LinearRegressionSolver ) )
+		mlak.set_preferred_engine( "logreg" )
+		self.assertEqual( type( mlak.preferredEngine ), type( logReg.LogisticRegressionSolver ) )
+		mlak.set_preferred_engine( "struggle" )
+		self.assertEqual( type( mlak.preferredEngine ), type( nn.NeuralNetworkSolver ) )
+		mlak.set_preferred_engine( "keras" )
+		self.assertEqual( type( mlak.preferredEngine ), type( ks.KerasSolver ) )
+		with self.assertRaises( Exception ):
+			mlak.set_preferred_engine( "xxx" )
+
 	def test_linreg_10_train( self ):
 		X, y = gen_regression_data()
 		dio.save( "./out/lin.p", { "X": X, "y": y } )

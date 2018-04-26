@@ -9,6 +9,7 @@ import numpy.testing as npt
 
 from KerasSolver import *
 from ModelAnalyzer import *
+import mlak.utils as mu
 import DataIO as dio
 from data_gen import *
 import numpy as np
@@ -39,6 +40,9 @@ def desc( conf, debug = False ):
 
 class TestKerasSolver( unittest.TestCase ):
 	X, y = gen_logistic_data()
+	def setUp( self ):
+		mu.fix_random()
+
 	def test_prepare_model( self ):
 		solver = KerasSolver()
 		shaper = DataShaper( self.X )
@@ -70,6 +74,17 @@ class TestKerasSolver( unittest.TestCase ):
 		Xt = np.array( [self.X[0], self.X[m // 2], self.X[-1]] )
 		yp = solver.predict( solution, Xt )
 		npt.assert_equal( yp, ["ripple", "diamond", "drill"] )
+		yc = solver.examine( solution, Xt )
+		self.assertEqual( len( yc ), 3 )
+		self.assertEqual( len( yc[0] ), 3 )
+		for y in yc:
+			self.assertTrue( mu.is_sorted( y, key = lambda x: x.confidence, reverse = True ) )
+		npt.assert_almost_equal( [x.confidence for x in yc[0]], [1, 0, 0] )
+		npt.assert_equal( [x.label for x in yc[0]], ["ripple", "drill", "diamond"] )
+		npt.assert_almost_equal( [x.confidence for x in yc[1]], [1, 0, 0] )
+		npt.assert_equal( [x.label for x in yc[1]], ["diamond", "drill", "ripple"] )
+		npt.assert_almost_equal( [x.confidence for x in yc[2]], [9.6223664e-01, 3.7241239e-02, 5.2214687e-04] )
+		npt.assert_equal( [x.label for x in yc[2]], ["drill", "ripple", "diamond"] )
 
 if __name__ == '__main__':
 	unittest.main()

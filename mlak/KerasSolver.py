@@ -196,13 +196,19 @@ class KerasSolver:
 		accuracy = np.mean( 1.0 * ( y.flatten() == solution.shaper().labels( yp ) ) )
 		return 1 - accuracy
 
-	def predict( self_, solution, X ):
+	def __examine( self_, solution, X ):
 		X = solution.shaper().conform( X, addOnes = False )
 		sampleSize = int( sqrt( solution.shaper().feature_count() ) )
 		X = X.reshape( X.shape[0], sampleSize, sampleSize, 1 )
 		X = X.astype( 'float32' )
 		model = solution.model()
-		yp = model.predict( X, verbose = 0 )
-		yp = np.argmax( yp, axis = 1 )
+		return model.predict( X, verbose = 0 )
+
+	def predict( self_, solution, X ):
+		yp = np.argmax( self_.__examine( solution, X ), axis = 1 )
 		return solution.shaper().labels( yp )
+
+	def examine( self_, solution, X ):
+		yp = self_.__examine( solution, X )
+		return ma.label_confidence( solution.shaper(), yp )
 

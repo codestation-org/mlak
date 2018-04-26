@@ -73,7 +73,7 @@ def train( args ):
 	)
 	solution = optimizationResults.solution
 	dio.save( args.solution, solution )
-	if args.debug:
+	if args.debug: # pragma: no cover
 		print( "solution = {}".format( solution ) )
 	if args.verbose and solution.shaper().is_classifier(): # pragma: no cover
 		for i in range( len( y_orig ) ):

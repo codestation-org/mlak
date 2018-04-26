@@ -31,7 +31,7 @@ def compute_grad( theta, *args ):
 	return grad.flatten()
 
 def predict_one_vs_all( X, all_theta ):
-	return np.argmax( np.dot( X, all_theta.T ), axis = 1 )
+	return np.dot( X, all_theta.T )
 
 class LogisticRegressionSolver:
 	def __initial_theta( shaper, y, solution, **kwArgs ):
@@ -59,13 +59,17 @@ class LogisticRegressionSolver:
 		return ma.Solution( model = theta, shaper = shaper )
 
 	def verify( self_, solution, X, y ):
-		X = solution.shaper().conform( X )
-		yp = predict_one_vs_all( X, solution.model() )
-		accuracy = np.mean( 1.0 * ( y.flatten() == solution.shaper().labels( yp ) ) )
+		accuracy = np.mean( 1.0 * ( y.flatten() == self_.predict( solution, X ) ) )
 		return 1 - accuracy
 
 	def predict( self_, solution, X ):
 		X = solution.shaper().conform( X )
 		yp = predict_one_vs_all( X, solution.model() )
+		yp = np.argmax( yp, axis = 1 )
 		return solution.shaper().labels( yp )
+
+	def examine( self_, solution, X ):
+		X = solution.shaper().conform( X )
+		yp = predict_one_vs_all( X, solution.model() )
+		return ma.label_confidence( solution.shaper(), yp )
 

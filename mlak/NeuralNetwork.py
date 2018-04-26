@@ -96,7 +96,7 @@ def predict_one_vs_all( X, topoTheta ):
 			x = np.concatenate( ( [1], x ) )
 			x = np.dot( theta[l], x )
 			x = mt.sigmoid( x )
-		y.append( np.argmax( x ) )
+		y.append( x )
 	return np.array( y )
 
 class NeuralNetworkSolver:
@@ -132,14 +132,18 @@ class NeuralNetworkSolver:
 		return ma.Solution( model = ( topology, theta ), shaper = shaper )
 
 	def verify( self_, solution, X, y ):
-		X = solution.shaper().conform( X, addOnes = False )
-		yp = predict_one_vs_all( X, solution.model() )
-		accuracy = np.mean( 1.0 * ( y.flatten() == solution.shaper().labels( yp ) ) )
+		accuracy = np.mean( 1.0 * ( y.flatten() == self_.predict( solution, X ) ) )
 		return 1 - accuracy
 
 	def predict( self_, solution, X ):
 		X = solution.shaper().conform( X, addOnes = False )
 		yp = predict_one_vs_all( X, solution.model() )
+		yp = np.argmax( yp, axis = 1 )
 		return solution.shaper().labels( yp )
+
+	def examine( self_, solution, X ):
+		X = solution.shaper().conform( X, addOnes = False )
+		yp = predict_one_vs_all( X, solution.model() )
+		return ma.label_confidence( solution.shaper(), yp )
 
 

@@ -140,7 +140,7 @@ class TestModelAnalyzer( unittest.TestCase ):
 			3.82169238e+00, 6.81074172e-01, 1.43006176e-01, 7.01556101e-02,
 			1.44597141e-02, 8.57240292e-03, 1.67551231e-03, 7.42103605e-04,
 			1.73911141e-04, 7.83993282e-05, 1.98093851e-05, 8.65960541e-06
-		], 4 )
+		], 3 )
 		npt.assert_equal( analyzerResults.iterationCountAnalyzis.iterationCount, [2, 4, 6, 10, 14, 27, 40] )
 		npt.assert_almost_equal( analyzerResults.iterationCountAnalyzis.errorTrain, [
 			2.18325422e-01, 1.04552670e-05, 2.27461723e-06, 2.27461723e-06,

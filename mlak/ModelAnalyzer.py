@@ -12,11 +12,21 @@ from mlak.Logger import Logger
 import mlak.utils as mu
 
 Observations = namedtuple( "Observations", "X y" )
+LabelConfidence = namedtuple( "LabelConfidence", "label confidence" )
 DataSet = namedtuple( "DataSet", "trainSet crossValidationSet testSet" )
 OptimizationResult = namedtuple( "OptimizationResult", "solution parameters failureRateTest" )
 SampleCountAnalyzis = namedtuple( "SampleCountAnalyzis", "sampleCount errorTrain errorCV" )
 IterationCountAnalyzis = namedtuple( "IterationCountAnalyzis", "iterationCount errorTrain errorCV" )
 AnalyzerResult = namedtuple( "AnalyzerResult", "sampleCountAnalyzis iterationCountAnalyzis" )
+
+def label_confidence( shaper, yp ):
+	res = []
+	for yi in yp:
+		r = []
+		for i, y in enumerate( yi ):
+			r.append( LabelConfidence( shaper.labels( [i] )[0], y ) )
+		res.append( sorted( r, key = lambda x: x.confidence, reverse = True ) )
+	return res
 
 class SolverType( IntEnum ):
 	VALUE_PREDICTOR = 1

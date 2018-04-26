@@ -8,6 +8,14 @@ def bins( count, top ):
 			b = bins( count, b[1] ) + b[1:]
 	return sorted( list( set( b ) ) )
 
+def is_sorted( l, key = lambda x: x, reverse = False ):
+	s = False
+	if reverse:
+		s = all( [ key( l[i] ) >= key( l[i + 1] ) for i in range( len( l ) - 1 ) ] )
+	else:
+		s = all( [ key( l[i] ) <= key( l[i + 1] ) for i in range( len( l ) - 1 ) ] )
+	return s
+
 import warnings
 
 class NoWarnings( object ):
