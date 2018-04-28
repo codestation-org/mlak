@@ -107,9 +107,13 @@ class DropoutParser:
 		model.add( Dropout( float( self_.values ), **kwArgs ) )
 
 class MaxPoolingParser:
-	args = ( Integer, Integer ),
+	args = ( Integer, Integer ), ( Text, )
 	grammar = [ K( "MaxPooling" ), K( "MP" ) ], params( *args )
-	def make( self_, model, **kwArgs ):
+	def make( self_, model, **kwArgs_ ):
+		kwArgs = {}
+		kwArgs.update( kwArgs_ )
+		if hasattr( self_, "kwArgs" ):
+			kwArgs.update( self_.kwArgs )
 		model.add( MaxPooling2D( pool_size = ( self_.values[0], self_.values[1] ), **kwArgs ) )
 
 class FlattenParser:
