@@ -14,5 +14,5 @@ if which coverage > /dev/null 2>&1 ; then
 	COVERAGE="coverage"
 fi
 
-${COVERAGE} run --source=. -m unittest discover -v && ${COVERAGE} ${MODE} --omit='tests/*,setup.py,mlak/Visual.py'
+${COVERAGE} run --branch --source=. -m unittest discover -v && ${COVERAGE} ${MODE} --omit='tests/*,setup.py,mlak/Visual.py'
 

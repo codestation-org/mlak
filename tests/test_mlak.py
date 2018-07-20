@@ -71,9 +71,9 @@ class TestMLAK( unittest.TestCase ):
 			Lambda = "0.1",
 			iterations = 10,
 			functions = [
-				lambda x: x[0] ** 2,
-				lambda x: x[1] ** 2,
-				lambda x: x[2] ** 2
+				"lambda x: x[0] ** 2",
+				"lambda x: x[1] ** 2",
+				"lambda x: x[2] ** 2"
 			],
 			engine = "linreg"
 		)
@@ -105,16 +105,35 @@ class TestMLAK( unittest.TestCase ):
 			solution = "./out/log-sol.p",
 			topology = [],
 			Lambda = "0.1",
-			iterations = 10,
+			iterations = 1,
 			engine = "logreg"
 		)
 		mlak.set_preferred_engine( args.engine )
 		with CapturedStdout():
 			mlak.train( args )
+
+		with CapturedStdout() as out:
+			mlak.test( args )
+		self.assertEqual( out.getvalue(), "0.2666666666666667\n" )
 		solution = dio.load( "./out/log-sol.p" )
 		npt.assert_equal( solution.shaper()._classesIdToLabel, ["diamond", "drill", "ripple"] )
 		self.assertEqual( len( solution.model() ), 3 )
-		npt.assert_almost_equal( np.sum( solution.model(), axis = 1 ), [20.5073757, -12.2881268, -11.7865259] )
+		npt.assert_almost_equal( np.sum( solution.model(), axis = 1 ), [15.9547132, -0.9575446, -4.9745893] )
+		self.assertAlmostEqual( np.sum( solution.shaper().mu() ), 205.85431033692913 )
+		self.assertAlmostEqual( np.sum( solution.shaper().sigma() ), 296.5719143203778 )
+
+		fix_random()
+		args.iterations = 9
+		with CapturedStdout():
+			mlak.train( args )
+
+		with CapturedStdout() as out:
+			mlak.test( args )
+		self.assertEqual( out.getvalue(), "0.0\n" )
+		solution = dio.load( "./out/log-sol.p" )
+		npt.assert_equal( solution.shaper()._classesIdToLabel, ["diamond", "drill", "ripple"] )
+		self.assertEqual( len( solution.model() ), 3 )
+		npt.assert_almost_equal( np.sum( solution.model(), axis = 1 ), [20.5073757, -13.1428356, -10.8690069] )
 		self.assertAlmostEqual( np.sum( solution.shaper().mu() ), 205.85431033692913 )
 		self.assertAlmostEqual( np.sum( solution.shaper().sigma() ), 296.5719143203778 )
 
@@ -138,17 +157,34 @@ class TestMLAK( unittest.TestCase ):
 			solution = "./out/struggle-sol.p",
 			topology = ["10"],
 			Lambda = "0.1",
-			iterations = 10,
+			iterations = 1,
 			engine = "struggle"
 		)
 		mlak.set_preferred_engine( args.engine )
 		with CapturedStdout():
 			mlak.train( args )
+		with CapturedStdout() as out:
+			mlak.test( args )
+		self.assertEqual( out.getvalue(), "0.5706666666666667\n" )
 		solution = dio.load( "./out/struggle-sol.p" )
 		npt.assert_equal( solution.shaper()._classesIdToLabel, ["diamond", "drill", "ripple"] )
 		npt.assert_equal( solution.model()[0], [256, 10, 3] )
 		t = solution.model()[1];
-		npt.assert_almost_equal( [np.sum( t[0] ), np.sum( t[1] ), np.sum( t[2] )], [0.41329415911582934, -0.018006237470538037, -0.18480180340480526] )
+		npt.assert_almost_equal( [np.sum( t[0] ), np.sum( t[1] ), np.sum( t[2] )], [0.14382  ,  0.0245429, -0.132043] )
+		self.assertAlmostEqual( np.sum( solution.shaper().mu() ), 205.85431033692913 )
+		self.assertAlmostEqual( np.sum( solution.shaper().sigma() ), 296.5719143203778 )
+		fix_random()
+		args.iterations = 9
+		with CapturedStdout():
+			mlak.train( args )
+		with CapturedStdout() as out:
+			mlak.test( args )
+		self.assertEqual( out.getvalue(), "0.0\n" )
+		solution = dio.load( "./out/struggle-sol.p" )
+		npt.assert_equal( solution.shaper()._classesIdToLabel, ["diamond", "drill", "ripple"] )
+		npt.assert_equal( solution.model()[0], [256, 10, 3] )
+		t = solution.model()[1];
+		npt.assert_almost_equal( [np.sum( t[0] ), np.sum( t[1] ), np.sum( t[2] )], [0.3095417, -0.0072933, -0.1675103] )
 		self.assertAlmostEqual( np.sum( solution.shaper().mu() ), 205.85431033692913 )
 		self.assertAlmostEqual( np.sum( solution.shaper().sigma() ), 296.5719143203778 )
 
